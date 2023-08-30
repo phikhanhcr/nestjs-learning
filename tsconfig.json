@@ -27,6 +27,9 @@
       "@config/*": [
         "src/config/*"
       ],
+      "@utils/*": [
+        "src/utils/*"
+      ],
       "*": [
         "node_modules/*"
       ]
