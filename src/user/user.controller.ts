@@ -5,6 +5,7 @@ import { UserGuard } from './user.guard';
 import { plainToClass } from 'class-transformer';
 import { ConfigService } from '@nestjs/config';
 import { AllConfigType } from '@config/config.type';
+import { User } from './entities/user.entity';
 
 @Controller('users')
 export class UserController {
@@ -14,8 +15,8 @@ export class UserController {
     ) {}
 
     @Get()
-    findAll(): string {
-        return this.userService.getUserById(1);
+    findAll(): Promise<User[]> {
+        return this.userService.findAll();
     }
 
     // in the query string, everything is string, need to cast to number
