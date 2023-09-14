@@ -49,6 +49,9 @@ export class APIError extends Error {
         this.status = status;
         this.isPublic = isPublic;
         this.errors = errs;
+        this.messageData = messageData;
+        console.log({ status, errorCode, message });
+
         if (errorCode === 0) {
             this.errorCode = status >= 500 ? ErrorCode.SERVER_ERROR : ErrorCode.VERIFY_FAILED;
         } else {

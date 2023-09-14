@@ -10,6 +10,11 @@ import appConfig from '@config/app.config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TypeOrmService } from './infrastructure/database/typeorm.service';
 import { DataSource } from 'typeorm';
+import { BullModule } from '@nestjs/bull';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { PostModule } from './post/post.module';
+import { AuthController } from './auth/auth.controller';
+import { AuthModule } from './auth/auth.module';
 @Module({
     imports: [
         ConfigModule.forRoot({
@@ -18,6 +23,7 @@ import { DataSource } from 'typeorm';
             load: [appConfig, databaseConfig],
         }),
         UserModule,
+        // PostModule,
         TypeOrmModule.forRootAsync({
             useClass: TypeOrmService,
             imports: [ConfigModule],
@@ -27,8 +33,22 @@ import { DataSource } from 'typeorm';
                 return dataSource;
             },
         }),
+        BullModule.forRoot({
+            redis: {
+                host: 'localhost',
+                port: 6379,
+            },
+            prefix: 'ins-chat',
+        }),
+        EventEmitterModule.forRoot({
+            wildcard: true,
+            delimiter: '-',
+            verboseMemoryLeak: true,
+            ignoreErrors: false,
+        }),
+        AuthModule,
     ],
-    controllers: [AppController],
+    controllers: [AppController, AuthController],
     providers: [AppService],
 })
 export class AppModule {}
