@@ -18,18 +18,18 @@
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
     "paths": {
-      "@config/*": [
-        "src/config/*"
-      ],
-      "@common/*": [
-        "src/common/*"
-      ],
-      "@utils/*": [
-        "src/utils/*"
-      ],
-      "*": [
-        "node_modules/*"
-      ]
+      // "@config/*": [
+      //   "src/config/*"
+      // ],
+      // "@common/*": [
+      //   "src/common/*"
+      // ],
+      // "@utils/*": [
+      //   "src/utils/*"
+      // ],
+      // "*": [
+      //   "node_modules/*"
+      // ]
     }
   }
 }

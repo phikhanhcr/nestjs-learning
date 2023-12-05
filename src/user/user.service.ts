@@ -35,6 +35,12 @@ export class UserService {
         // );
         // console.log({ count: this.count });
         // this.count++;
+        const newData = await this.usersRepository.save(
+            this.usersRepository.create({
+                name: 'ahgihi',
+            }),
+        );
+        console.log({ newData });
         const users = await this.usersRepository.find();
         this.eventEmitter.emit(USER_CREATED_EVENT, {
             users,

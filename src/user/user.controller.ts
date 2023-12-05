@@ -16,7 +16,7 @@ import { CreateUserDto, GetUserByIdDto } from './dto/user.dto';
 import { UserGuard } from './user.guard';
 import { plainToClass } from 'class-transformer';
 import { ConfigService } from '@nestjs/config';
-import { AllConfigType } from '@config/config.type';
+import { AllConfigType } from '../config/config.type';
 import { User } from './entities/user.entity';
 import { AuthGuard } from '../auth/auth.guard';
 
@@ -43,7 +43,7 @@ export class UserController {
     // }
 
     @Post('create')
-    @UseGuards(UserGuard, AuthGuard)
+    // @UseGuards(UserGuard, AuthGuard)
     // if defining in global scope, no need to use this decorator
     // @UsePipes(new ValidationPipe())
     create(@Body() createUserDto: CreateUserDto): string {
@@ -53,7 +53,7 @@ export class UserController {
     }
 
     @Get('post')
-    @UseGuards(UserGuard, AuthGuard)
+    // @UseGuards(UserGuard, AuthGuard)
     getPost(@Request() req): Promise<string> {
         console.log({ user123: req.user });
         return this.postService.getPosts();

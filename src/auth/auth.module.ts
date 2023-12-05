@@ -6,10 +6,10 @@ import { AuthGuard } from './auth.guard';
 @Module({
     providers: [
         AuthService,
-        {
-            provide: 'APP_GUARD',
-            useClass: AuthGuard,
-        },
+        // {
+        //     provide: 'APP_GUARD',
+        //     useClass: AuthGuard,
+        // },
     ],
     imports: [
         JwtModule.register({
@@ -18,5 +18,6 @@ import { AuthGuard } from './auth.guard';
             // signOptions: { expiresIn: '60s' },
         }),
     ],
+    exports: [AuthService],
 })
 export class AuthModule {}

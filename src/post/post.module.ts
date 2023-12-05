@@ -8,6 +8,7 @@ import { User } from '../user/entities/user.entity';
 import { BullModule } from '@nestjs/bull';
 import { AuthMiddleware } from '../auth/auth.middleware';
 import { AuthService } from '../auth/auth.service';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({})
 export class PostModule implements NestModule {
@@ -38,6 +39,7 @@ export class PostModule implements NestModule {
                     name: 'user',
                 }),
                 UserModule,
+                AuthModule,
             ],
         };
     }

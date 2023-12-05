@@ -5,8 +5,6 @@ import { UserController } from './user/user.controller';
 import { UserModule } from './user/user.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
-import databaseConfig from '@config/database.config';
-import appConfig from '@config/app.config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TypeOrmService } from './infrastructure/database/typeorm.service';
 import { DataSource } from 'typeorm';
@@ -15,6 +13,15 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { PostModule } from './post/post.module';
 import { AuthController } from './auth/auth.controller';
 import { AuthModule } from './auth/auth.module';
+import { ChannelController } from './channel/channel.controller';
+import { ParticipantController } from './participant/participant.controller';
+import { ParticipantModule } from './participant/participant.module';
+import { MessageController } from './message/message.controller';
+import { MessageModule } from './message/message.module';
+import appConfig from './config/app.config';
+import databaseConfig from './config/database.config';
+import { ChannelModule } from './channel/channel.module';
+import { CacheModule } from '@nestjs/cache-manager';
 @Module({
     imports: [
         ConfigModule.forRoot({
@@ -47,8 +54,14 @@ import { AuthModule } from './auth/auth.module';
             ignoreErrors: false,
         }),
         AuthModule,
+        ChannelModule,
+        ParticipantModule,
+        MessageModule,
+        CacheModule.register({
+            isGlobal: true,
+        }),
     ],
-    controllers: [AppController, AuthController],
+    controllers: [AppController],
     providers: [AppService],
 })
 export class AppModule {}

@@ -1,0 +1,34 @@
+chat:
+
+
+/chat/channels : create channels
+{
+    "type": "direct",
+    "members": [
+        {
+            "id": 5001,
+            "type": "user"
+        }
+    ]
+}
+
+dau tien, check user target co channel voi user hay chua, neu co thi tao
+
+
+
+POST /chat/channels/messages
+{
+    "nonce" : "16951510811",
+    "channel_id" : "650ea8e1d4b5b1c4e53418a4",
+    "message": "this is fucking nothinhg",
+    "message_type" : 1
+}
+
+
+sink db from mongodb to postgresql
+
+
+sau khi gui tin nhan, check temporary = 1 => day la tin nhan dau tien,
+tao ban ghi channel, tao participants
+
+1 channel se co 2 participants, moi tin nhan se tuong ung voi channel_message

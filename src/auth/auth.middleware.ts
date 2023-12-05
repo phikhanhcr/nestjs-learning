@@ -1,7 +1,7 @@
-import { ErrorCode } from '@config/errors';
 import { HttpException, HttpStatus, Injectable, NestMiddleware, UnauthorizedException } from '@nestjs/common';
-import { APIError } from '@common/error/api.error';
 import { AuthService } from './auth.service';
+import { APIError } from 'src/common/error/api.error';
+import { ErrorCode } from 'src/config/errors';
 
 @Injectable()
 export class AuthMiddleware implements NestMiddleware {
@@ -18,8 +18,6 @@ export class AuthMiddleware implements NestMiddleware {
             );
         }
         const user = await this.authService.getAuthInfoFromToken(req.headers.authorization.split(' ')[1]);
-        console.log('user');
-        console.log({ user });
         if (!user) {
             throw new APIError({
                 message: 'common.unauthorized',

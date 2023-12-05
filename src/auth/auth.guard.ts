@@ -22,7 +22,7 @@ export class AuthGuard implements CanActivate {
             throw new HttpException(
                 {
                     status: HttpStatus.UNAUTHORIZED,
-                    error: 'Login di eim djtcu',
+                    error: 'AuthGuard: Login failed',
                 },
                 HttpStatus.UNAUTHORIZED,
             );
@@ -34,7 +34,7 @@ export class AuthGuard implements CanActivate {
                 throw new HttpException(
                     {
                         status: HttpStatus.UNAUTHORIZED,
-                        error: 'Login di eim djtcu',
+                        error: 'AuthGuard: Login failed',
                     },
                     HttpStatus.UNAUTHORIZED,
                 );

@@ -1,6 +1,6 @@
-import { ErrorCode } from '@config/errors';
 import { errors } from 'express-validation';
 import httpStatus from 'http-status';
+import { ErrorCode } from 'src/config/errors';
 
 interface APIErrorParams {
     message: string;
