@@ -3,6 +3,8 @@ export type AppConfig = {
     name: string;
     workingDirectory: string;
     port: number;
+    userServiceUrl?: string;
+    userServiceApiKey?: string;
 };
 
 export type DatabaseConfig = {

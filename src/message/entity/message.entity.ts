@@ -1,6 +1,20 @@
 import { ChannelMessageType } from 'src/channel/entities/channel.entity';
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, DeleteDateColumn } from 'typeorm';
 
+export interface IMessage {
+    id: number;
+    channelId: number;
+    senderId: number;
+    senderName: string;
+    senderAvatar: string;
+    message: string;
+    messageType: ChannelMessageType;
+    sequence: number;
+    createdAt: Date;
+    updatedAt: Date;
+    deletedAt: Date;
+}
+
 @Entity({
     name: 'messages',
 })

@@ -32,3 +32,41 @@ sau khi gui tin nhan, check temporary = 1 => day la tin nhan dau tien,
 tao ban ghi channel, tao participants
 
 1 channel se co 2 participants, moi tin nhan se tuong ung voi channel_message
+
+
+luong send message:
+//
+
+1. check trong redis xem da co channel chua, channel co ton tai sender id ko
+oke => tao data message
+
+const preprocessChannelMessageDataJob: IJobPreprocessChannelMessage = {
+    id: request.id,
+    nonce: request.nonce,
+    channel_id: request.channel_id,
+    message: request.message,
+    message_type: request.message_type,
+    payload: request.payload,
+    sender: request.sender,
+    sequence: await ChannelService.getSequenceForChannel(request.channel_id),
+    sent_at: request.sent_at,
+};
+
+await (await QueueService.getQueue<IJobPreprocessChannelMessage>(JOB_PREPROCESS_CHANNEL_MESSAGE)).add(
+    preprocessChannelMessageDataJob,
+);
+
+
+
+// send message to channel, save into database
+=> increase message count
+=> increase un_read_count for other participant
+=> update un_read_count for sender_id
+push message through mqtt
+
+
+
+
+
+run job in another process / user-service => base on queue service,
+// how to add job with job name

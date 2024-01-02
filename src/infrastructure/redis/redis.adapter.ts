@@ -98,29 +98,6 @@ export class RedisAdapter {
         }
     }
 
-    static async getQueueOptions(): Promise<QueueOptions> {
-        if (!RedisAdapter.subscriber) {
-            RedisAdapter.subscriber = await RedisAdapter.connect(false);
-        }
-        return {
-            prefix: `${process.env.APP_NAME}:jobs:`,
-            defaultJobOptions: {
-                removeOnComplete: 1000,
-                removeOnFail: 1000,
-            },
-            createClient: (type) => {
-                switch (type) {
-                    case 'client':
-                        return RedisAdapter.client;
-                    case 'subscriber':
-                        return RedisAdapter.subscriber;
-                    default:
-                        return RedisAdapter.createClient();
-                }
-            },
-        };
-    }
-
     static serialize(value: unknown): string {
         if (value) {
             return JSON.stringify(value);
@@ -198,19 +175,19 @@ export class RedisAdapter {
         }
     }
 
-    // static async hmget(key: string, fields: string[]): Promise<unknown> {
-    //     try {
-    //         const result = await (await RedisAdapter.getClient()).hmget(key, fields);
-    //         const data = {};
-    //         for (let i = 0; i < fields.length; i++) {
-    //             data[fields[i]] = result[i];
-    //         }
-    //         Logger.log(`'HMGET ${key}' from Redis successfully!`);
-    //         return data;
-    //     } catch (error) {
-    //         Logger.error(`'HMGET ${key}' from Redis error!`, error);
-    //     }
-    // }
+    static async hmget(key: string, fields: string[]): Promise<unknown> {
+        try {
+            const result = await (await RedisAdapter.getClient()).hmget(key, fields);
+            const data = {};
+            for (let i = 0; i < fields.length; i++) {
+                data[fields[i]] = result[i];
+            }
+            Logger.log(`'HMGET ${key}' from Redis successfully!`);
+            return data;
+        } catch (error) {
+            Logger.error(`'HMGET ${key}' from Redis error!`, error);
+        }
+    }
 
     static async delete(key: string): Promise<unknown> {
         return (await RedisAdapter.getClient()).del(key);

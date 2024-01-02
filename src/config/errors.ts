@@ -89,4 +89,6 @@ export enum ErrorCode {
     // SERVER ERROR
     SERVER_ERROR = 500,
     SERVER_AUTH_ERROR = 501, // and not know why
+
+    USER_NOT_IN_CHANNEL = 600,
 }

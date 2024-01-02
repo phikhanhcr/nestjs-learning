@@ -19,6 +19,14 @@ class EnvironmentVariablesValidator {
     @Max(65535)
     @IsOptional()
     APP_PORT: number;
+
+    @IsString()
+    @IsOptional()
+    USER_SERVICE_URL: string;
+
+    @IsString()
+    @IsOptional()
+    USER_SERVICE_API_KEY: string;
 }
 
 export default registerAs<AppConfig>('app', () => {
@@ -33,5 +41,7 @@ export default registerAs<AppConfig>('app', () => {
             : process.env.PORT
             ? parseInt(process.env.PORT, 10)
             : 3000,
+        userServiceUrl: process.env.USER_SERVICE_URL,
+        userServiceApiKey: process.env.USER_SERVICE_API_KEY,
     };
 });

@@ -17,7 +17,6 @@ async function bootstrap() {
         }),
     );
     await app.listen(configService.get('app.port', { infer: true }), () => {
-        // console.log(`Server is listening on port ${configService.get('app.port', { infer: true })}`);
         Logger.log(`Server is listening on port ${configService.get('app.port', { infer: true })}`);
     });
 }

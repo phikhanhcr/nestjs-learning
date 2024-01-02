@@ -11,7 +11,6 @@ import {
     ValidationPipe,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { PostService } from '../post/post.service';
 import { CreateUserDto, GetUserByIdDto } from './dto/user.dto';
 import { UserGuard } from './user.guard';
 import { plainToClass } from 'class-transformer';
@@ -25,22 +24,18 @@ export class UserController {
     constructor(
         private readonly userService: UserService,
         private configService: ConfigService<AllConfigType>,
-        private postService: PostService,
     ) {}
 
-    @Get()
-    findAll(): Promise<User[]> {
-        return this.userService.findAll();
-    }
+    // @Get()
+    // findAll(): Promise<User[]> {
+    //     return this.userService.findAll();
+    // }
 
     // in the query string, everything is string, need to cast to number
-    // @Get(':id')
-    // getById(@Param('id', ParseIntPipe) id: number): string {
-    //     console.log({ id });
-    //     console.log({ config: this.configService.get('database.host', { infer: true }) });
-
-    //     return this.userService.getUserById(id);
-    // }
+    @Get()
+    getById(): string {
+        return this.userService.getUserById();
+    }
 
     @Post('create')
     // @UseGuards(UserGuard, AuthGuard)
@@ -50,12 +45,5 @@ export class UserController {
         console.log({ createUserDto });
         const data = plainToClass(CreateUserDto, createUserDto);
         return 'create';
-    }
-
-    @Get('post')
-    // @UseGuards(UserGuard, AuthGuard)
-    getPost(@Request() req): Promise<string> {
-        console.log({ user123: req.user });
-        return this.postService.getPosts();
     }
 }
