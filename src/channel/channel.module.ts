@@ -10,7 +10,7 @@ import { Participant } from 'src/participant/entity/participant.entity';
 import { AddSenderInformationMiddleware } from './channel.middleware';
 import { ChannelProcessor } from './channel.processor';
 import { UserService } from 'src/user/user.service';
-import { BullModule } from '@nestjs/bull';
+import { BullModule } from '@nestjs/bullmq';
 import { CHANNEL_PROCESSOR, USER_PROCESSOR } from 'src/config/job.interface';
 import { User } from 'src/user/entities/user.entity';
 import { HttpModule } from '@nestjs/axios';
@@ -24,12 +24,16 @@ import { HttpModule } from '@nestjs/axios';
         TypeOrmModule.forFeature([User]),
         TypeOrmModule.forFeature([Participant]),
         forwardRef(() => ParticipantModule),
-        BullModule.registerQueue({
-            name: CHANNEL_PROCESSOR,
-        }),
-        BullModule.registerQueue({
-            name: USER_PROCESSOR,
-        }),
+        // BullModule.registerQueue({
+        //     name: CHANNEL_PROCESSOR,
+        //     processors: [ChannelProcessor],
+        // }),
+        // BullModule.registerQueue({
+        //     name: CHANNEL_PROCESSOR,
+        // }),
+        // BullModule.registerQueue({
+        //     name: USER_PROCESSOR,
+        // }),
     ],
     exports: [ChannelService],
 })

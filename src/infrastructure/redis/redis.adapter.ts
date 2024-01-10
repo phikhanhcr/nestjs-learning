@@ -1,5 +1,5 @@
 import ioredis, { Redis } from 'ioredis';
-import { QueueOptions } from 'bull';
+import { QueueOptions } from 'bullmq';
 import { Injectable, Logger } from '@nestjs/common';
 
 /**

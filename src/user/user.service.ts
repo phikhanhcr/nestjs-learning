@@ -1,4 +1,4 @@
-import { BullModule, InjectQueue } from '@nestjs/bull';
+import { BullModule, InjectQueue } from '@nestjs/bullmq';
 import { Injectable, Logger, Scope } from '@nestjs/common';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
@@ -11,7 +11,7 @@ import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { AllConfigType } from 'src/config/config.type';
 import { USER_PROCESSOR } from 'src/config/job.interface';
-import { Queue } from 'bull';
+import { Queue } from 'bullmq';
 
 const USER_INFORMATION_TTL = 1800; // 30p
 
@@ -29,7 +29,7 @@ export class UserService {
     ) {}
     getUserById(): string {
         console.log('hihi');
-        this.userQueue.add({ id: 1 });
+        this.userQueue.add('test', { id: 'test' });
         return 'hi';
     }
 

@@ -22,8 +22,8 @@ import {
     IJobPreprocessChannelMessage,
     JOB_PREPROCESS_CHANNEL_MESSAGE,
 } from 'src/config/job.interface';
-import { Queue } from 'bull';
-import { InjectQueue } from '@nestjs/bull';
+import { Queue } from 'bullmq';
+import { InjectQueue } from '@nestjs/bullmq';
 import { UserService } from 'src/user/user.service';
 
 export const MESSAGE_NONCE_TTL = 7200; // 2H
@@ -33,8 +33,7 @@ export class ChannelService {
         @InjectRepository(Channel)
         private channelsRepository: Repository<Channel>,
         private userService: UserService,
-        @Inject(forwardRef(() => ParticipantService)) private readonly participantService: ParticipantService,
-        @InjectQueue(CHANNEL_PROCESSOR) private readonly channelQueue: Queue,
+        @Inject(forwardRef(() => ParticipantService)) private readonly participantService: ParticipantService, // @InjectQueue(CHANNEL_PROCESSOR) private readonly channelQueue: Queue,
     ) {}
 
     async create(auth: IAuthUser, req: ICreateChannelRequest): Promise<IChannelInformationResponse> {
@@ -103,7 +102,7 @@ export class ChannelService {
             sent_at: data.sent_at,
         };
 
-        this.channelQueue.add(JOB_PREPROCESS_CHANNEL_MESSAGE, preprocessChannelMessageDataJob);
+        // this.channelQueue.add(JOB_PREPROCESS_CHANNEL_MESSAGE, preprocessChannelMessageDataJob);
 
         return preprocessChannelMessageDataJob as IChannelMessagesResponse;
     }

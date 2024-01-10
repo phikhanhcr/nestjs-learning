@@ -5,7 +5,7 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TypeOrmService } from './infrastructure/database/typeorm.service';
 import { DataSource } from 'typeorm';
-import { BullModule } from '@nestjs/bull';
+import { BullModule } from '@nestjs/bullmq';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { AuthModule } from './auth/auth.module';
 import { ParticipantModule } from './participant/participant.module';
@@ -14,8 +14,9 @@ import appConfig from './config/app.config';
 import databaseConfig from './config/database.config';
 import { ChannelModule } from './channel/channel.module';
 import { CacheModule } from '@nestjs/cache-manager';
-import UserProcessorModule from './user/user.processor';
+// import UserProcessorModule from './user/user.processor';
 import { USER_PROCESSOR } from './config/job.interface';
+import { AppListener } from './app.listener';
 @Module({
     imports: [
         ConfigModule.forRoot({
@@ -34,12 +35,14 @@ import { USER_PROCESSOR } from './config/job.interface';
                 return dataSource;
             },
         }),
-        BullModule.forRoot({
-            redis: {
-                host: 'localhost',
-                port: 6379,
-            },
-            prefix: 'ins-chat',
+
+        BullModule.forRootAsync({
+            useFactory: async () => ({
+                connection: {
+                    host: 'localhost',
+                    port: 6379,
+                },
+            }),
         }),
 
         EventEmitterModule.forRoot({
@@ -56,6 +59,6 @@ import { USER_PROCESSOR } from './config/job.interface';
             isGlobal: true,
         }),
     ],
-    providers: [],
+    providers: [AppListener],
 })
 export class AppModule {}

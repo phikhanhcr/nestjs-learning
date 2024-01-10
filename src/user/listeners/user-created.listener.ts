@@ -8,6 +8,7 @@ export const USER_CREATED_EVENT = 'user-created';
 export class UserCreatedEvent {
     @OnEvent(USER_CREATED_EVENT)
     handleOrderCreatedEvent(event: IUserCreatedEvent) {
-        // console.log(event);
+        console.log(event);
+        console.log(USER_CREATED_EVENT);
     }
 }

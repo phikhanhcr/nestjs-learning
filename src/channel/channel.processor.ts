@@ -1,6 +1,6 @@
-import { Process, Processor } from '@nestjs/bull';
+import { Processor } from '@nestjs/bullmq';
 import { Logger } from '@nestjs/common';
-import { Job } from 'bull';
+import { Job } from 'bullmq';
 import {
     CHANNEL_PROCESSOR,
     IJobPreprocessChannelMessage,
@@ -19,7 +19,7 @@ export class ChannelProcessor {
     ) {}
     private readonly logger = new Logger(ChannelProcessor.name);
 
-    @Process(JOB_PREPROCESS_CHANNEL_MESSAGE)
+    // @Process(JOB_PREPROCESS_CHANNEL_MESSAGE)
     async handleTranscode(job: Job<IJobPreprocessChannelMessage>) {
         this.logger.debug(`Processing job ${job.id} of type ${job.name} with data ${job.data}...`);
 
