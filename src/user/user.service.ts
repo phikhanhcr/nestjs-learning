@@ -15,9 +15,7 @@ import { Queue } from 'bullmq';
 
 const USER_INFORMATION_TTL = 1800; // 30p
 
-@Injectable({
-    scope: Scope.DEFAULT,
-})
+@Injectable({})
 export class UserService {
     constructor(
         @InjectRepository(User)
@@ -28,7 +26,7 @@ export class UserService {
         @InjectQueue(USER_PROCESSOR) private readonly userQueue: Queue,
     ) {}
     getUserById(): string {
-        console.log('hihi');
+        console.log('job add');
         this.userQueue.add('test', { id: 'test' });
         return 'hi';
     }

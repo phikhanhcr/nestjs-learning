@@ -3,9 +3,9 @@ import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
 import { join } from 'path';
 import { USER_PROCESSOR } from 'src/config/job.interface';
-import { WorkerListener } from './worker.listener';
 import { EventEmitterModule } from '@nestjs/event-emitter';
-import { UserCreatedEvent } from 'src/user/listeners/user-created.listener';
+import { UserEvent } from 'src/user/listeners/user-created.listener';
+import { WorkerProcessorHost } from './worker.processor';
 
 @Module({
     imports: [
@@ -25,6 +25,7 @@ import { UserCreatedEvent } from 'src/user/listeners/user-created.listener';
         }),
         EventEmitterModule.forRoot(),
     ],
-    providers: [WorkerListener, WorkerService],
+
+    providers: [UserEvent],
 })
 export class WorkerModule {}

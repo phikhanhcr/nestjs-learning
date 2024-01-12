@@ -6,7 +6,7 @@ import { USER_CREATED_EVENT } from './listeners/user-created.listener';
 const eventEmitter = new EventEmitter2();
 export default async function (job: SandboxedJob) {
     const logger = new Logger('User Processor');
-    console.log('User Processor');
+    logger.log('User Processor');
 
     switch (job.name) {
         case 'test':
@@ -19,3 +19,5 @@ export default async function (job: SandboxedJob) {
 
     async function handlerSomething() {}
 }
+
+// how to run event bus in internal process in nestjs

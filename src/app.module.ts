@@ -17,6 +17,7 @@ import { CacheModule } from '@nestjs/cache-manager';
 // import UserProcessorModule from './user/user.processor';
 import { USER_PROCESSOR } from './config/job.interface';
 import { AppListener } from './app.listener';
+import { WorkerService } from './worker/worker.service';
 @Module({
     imports: [
         ConfigModule.forRoot({
@@ -59,6 +60,6 @@ import { AppListener } from './app.listener';
             isGlobal: true,
         }),
     ],
-    providers: [AppListener],
+    providers: [WorkerService],
 })
 export class AppModule {}

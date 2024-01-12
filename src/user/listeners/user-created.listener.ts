@@ -5,7 +5,7 @@ import { IUserCreatedEvent } from '../events/user-created.event';
 export const USER_CREATED_EVENT = 'user-created';
 
 @Injectable()
-export class UserCreatedEvent {
+export class UserEvent {
     @OnEvent(USER_CREATED_EVENT)
     handleOrderCreatedEvent(event: IUserCreatedEvent) {
         console.log(event);
