@@ -12,41 +12,29 @@ import { HttpModule } from '@nestjs/axios';
 import { USER_PROCESSOR } from 'src/config/job.interface';
 import { join } from 'path';
 import { UserProcessor } from './user.processor';
+import { UserEvent } from './listeners/user-created.listener';
+import { EventsService } from 'src/common/eventbus/eventbus.service';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { UserQueueBackgroundService } from 'src/worker/user/queue.service';
 // import UserProcessorModule from './user.processor';
 // import OtherProcessorModule from './other.processor';
 
 @Module({
-    providers: [UserService, AuthService],
+    providers: [UserService, AuthService, UserEvent, UserQueueBackgroundService],
     controllers: [UserController],
     imports: [
         TypeOrmModule.forFeature([User]),
         HttpModule,
-        // BullModule.registerQueue({
-        //     name: USER_PROCESSOR,
-        //     processors: [UserProcessorModule],
-        // }),
-        // BullModule.registerQueue({
-        //     name: 'otherQueue',
-        //     processors: [OtherProcessorModule],
-        // }),
-        // BullModule.registerQueue({
-        //     name: USER_PROCESSOR,
-        //     processors: [],
-        //     prefix: 'ins-chat',
-        //     connection: {
-        //         host: 'localhost',
-        //         port: 6379,
-        //     },
-        // }),
-
         BullModule.registerQueue({
             name: USER_PROCESSOR,
             prefix: 'ins-chat',
+            processors: [],
             connection: {
                 host: 'localhost',
                 port: 6379,
             },
         }),
+        // EventEmitterModule.forRoot(),
     ],
     exports: [UserService],
 })

@@ -18,6 +18,8 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { USER_PROCESSOR } from './config/job.interface';
 import { AppListener } from './app.listener';
 import { WorkerService } from './worker/worker.service';
+import { EventsService } from './common/eventbus/eventbus.service';
+import { SomeOtherService } from './user/test.service';
 @Module({
     imports: [
         ConfigModule.forRoot({
@@ -37,29 +39,29 @@ import { WorkerService } from './worker/worker.service';
             },
         }),
 
-        BullModule.forRootAsync({
-            useFactory: async () => ({
-                connection: {
-                    host: 'localhost',
-                    port: 6379,
-                },
-            }),
-        }),
+        // BullModule.forRootAsync({
+        //     useFactory: async () => ({
+        //         connection: {
+        //             host: 'localhost',
+        //             port: 6379,
+        //         },
+        //     }),
+        // }),
 
         EventEmitterModule.forRoot({
-            wildcard: true,
-            delimiter: '-',
-            verboseMemoryLeak: true,
-            ignoreErrors: false,
+            // wildcard: true,
+            // delimiter: '-',
+            // verboseMemoryLeak: true,
+            // ignoreErrors: false,
         }),
         AuthModule,
         // ChannelModule,
-        // ParticipantModule,
+        // ParticipantModule
         MessageModule,
         CacheModule.register({
             isGlobal: true,
         }),
     ],
-    providers: [WorkerService],
+    providers: [EventsService, SomeOtherService],
 })
 export class AppModule {}

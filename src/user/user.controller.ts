@@ -33,8 +33,8 @@ export class UserController {
 
     // in the query string, everything is string, need to cast to number
     @Get()
-    getById(): string {
-        return this.userService.getUserById();
+    async getById(): Promise<string> {
+        return await this.userService.getUserById();
     }
 
     @Post('create')

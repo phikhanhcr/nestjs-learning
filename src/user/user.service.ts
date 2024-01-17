@@ -12,22 +12,37 @@ import { ConfigService } from '@nestjs/config';
 import { AllConfigType } from 'src/config/config.type';
 import { USER_PROCESSOR } from 'src/config/job.interface';
 import { Queue } from 'bullmq';
+import { EventBus } from '@nestjs/cqrs';
+import eventbus from 'src/common/eventbus';
 
 const USER_INFORMATION_TTL = 1800; // 30p
 
 @Injectable({})
 export class UserService {
+    private queue: Queue;
+    userQueue: any;
     constructor(
         @InjectRepository(User)
         private usersRepository: Repository<User>,
         private eventEmitter: EventEmitter2,
         private readonly httpService: HttpService,
         private configService: ConfigService<AllConfigType>,
-        @InjectQueue(USER_PROCESSOR) private readonly userQueue: Queue,
-    ) {}
-    getUserById(): string {
+    ) {
+        this.queue = new Queue('sendMail', {
+            connection: {
+                host: 'localhost',
+                port: 6379,
+            },
+        });
+    }
+    async getUserById(): Promise<string> {
         console.log('job add');
-        this.userQueue.add('test', { id: 'test' });
+        // await this.queue.add('sendMail', { id: 'test' });
+
+        // this.eventEmitter.emit(USER_CREATED_EVENT, { name: 'test' });
+        // this.userQueue.add('test', { id: 'test' });
+        // eventbus.emit(USER_CREATED_EVENT, { name: 'asdsadas' });
+        this.eventEmitter.emit(USER_CREATED_EVENT, { name: 'test' });
         return 'hi';
     }
 

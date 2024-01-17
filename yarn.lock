@@ -748,6 +748,14 @@
   dependencies:
     tslib "2.6.0"
 
+"@nestjs/bull@^10.0.1":
+  version "10.0.1"
+  resolved "https://registry.yarnpkg.com/@nestjs/bull/-/bull-10.0.1.tgz#592073d148a98f3e0b2268a81dc023db29ef9b66"
+  integrity sha512-1GcJ8BkHDgQdBMZ7SqAqgUHiFnISXmpGvewFeTc8wf87JLk2PweiKv9j9/KQKU+NI237pCe82XB0bXzTnsdxSw==
+  dependencies:
+    "@nestjs/bull-shared" "^10.0.1"
+    tslib "2.6.0"
+
 "@nestjs/bullmq@^10.0.1":
   version "10.0.1"
   resolved "https://registry.yarnpkg.com/@nestjs/bullmq/-/bullmq-10.0.1.tgz#d00cc7a896d5e5abfbaeaad6131b3f4ba2c0785e"
@@ -819,6 +827,13 @@
     iterare "1.2.1"
     path-to-regexp "3.2.0"
     tslib "2.6.1"
+
+"@nestjs/cqrs@^10.2.6":
+  version "10.2.6"
+  resolved "https://registry.yarnpkg.com/@nestjs/cqrs/-/cqrs-10.2.6.tgz#3f587f614b4288e718eb9340fa4d6191af73990e"
+  integrity sha512-QB5D4MnPybYK0y/Md9UoAMt5by/EleFiLVELYtSm2rzKtAcrcYbc8IrmootKs4cqonxskrcdZliqFgtQF+TdjQ==
+  dependencies:
+    uuid "9.0.0"
 
 "@nestjs/event-emitter@^2.0.3":
   version "2.0.3"
