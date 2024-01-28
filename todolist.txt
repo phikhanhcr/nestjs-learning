@@ -73,3 +73,9 @@ try to listen event from another process
 
 run job in another process / user-service => base on queue service,
 // how to add job with job name
+
+
+
+// check why should use mongoObjectId instead of number
+// try to refactor using number instead of objectId
+// create channel, message => oke

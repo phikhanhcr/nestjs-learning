@@ -8,17 +8,18 @@ export class AddSenderInformationInterceptor implements NestInterceptor {
         console.log('Before...');
         const req = context.switchToHttp().getRequest();
         const { user } = req;
+        console.log({ user });
 
         req.body.sender = {
             id: user.id,
             name: user.name,
         };
-
+        req.body.nonce = +req.body.nonce;
         req.body.sent_at = Date.now();
+
         const now = Date.now();
         return next.handle().pipe(
             map((data) => {
-                console.log(`After... ${Date.now() - now}ms`);
                 console.log({ data });
                 return data;
             }),

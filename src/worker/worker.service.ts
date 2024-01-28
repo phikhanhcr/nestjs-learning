@@ -5,8 +5,5 @@ import { USER_CREATED_EVENT } from 'src/user/listeners/user-created.listener';
 
 @Injectable()
 export class WorkerService {
-    @OnEvent(USER_CREATED_EVENT)
-    handleUserCreatedEvent(payload: any) {
-        console.log('User created event received:', payload);
-    }
+    // do something
 }

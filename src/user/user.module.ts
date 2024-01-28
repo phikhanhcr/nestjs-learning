@@ -15,25 +15,17 @@ import { UserProcessor } from './user.processor';
 import { UserEvent } from './listeners/user-created.listener';
 import { EventsService } from 'src/common/eventbus/eventbus.service';
 import { EventEmitterModule } from '@nestjs/event-emitter';
-import { UserQueueBackgroundService } from 'src/worker/user/queue.service';
+import { QueueService } from 'src/infrastructure/queue.service';
 // import UserProcessorModule from './user.processor';
 // import OtherProcessorModule from './other.processor';
 
 @Module({
-    providers: [UserService, AuthService, UserEvent, UserQueueBackgroundService],
+    providers: [UserService, AuthService, UserEvent, QueueService],
     controllers: [UserController],
     imports: [
         TypeOrmModule.forFeature([User]),
         HttpModule,
-        BullModule.registerQueue({
-            name: USER_PROCESSOR,
-            prefix: 'ins-chat',
-            processors: [],
-            connection: {
-                host: 'localhost',
-                port: 6379,
-            },
-        }),
+
         // EventEmitterModule.forRoot(),
     ],
     exports: [UserService],

@@ -1,4 +1,4 @@
-import { ChannelMessageType } from './entities/channel.entity';
+import { ChannelMessageType } from './entity/channel.entity';
 
 export interface IMember {
     id: number;

@@ -1,3 +1,5 @@
+import 'reflect-metadata';
+
 import { Module } from '@nestjs/common';
 import { UserModule } from './user/user.module';
 import { ConfigModule } from '@nestjs/config';
@@ -5,7 +7,6 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TypeOrmService } from './infrastructure/database/typeorm.service';
 import { DataSource } from 'typeorm';
-import { BullModule } from '@nestjs/bullmq';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { AuthModule } from './auth/auth.module';
 import { ParticipantModule } from './participant/participant.module';
@@ -15,11 +16,9 @@ import databaseConfig from './config/database.config';
 import { ChannelModule } from './channel/channel.module';
 import { CacheModule } from '@nestjs/cache-manager';
 // import UserProcessorModule from './user/user.processor';
-import { USER_PROCESSOR } from './config/job.interface';
-import { AppListener } from './app.listener';
-import { WorkerService } from './worker/worker.service';
 import { EventsService } from './common/eventbus/eventbus.service';
 import { SomeOtherService } from './user/test.service';
+import { QueueService } from './infrastructure/queue.service';
 @Module({
     imports: [
         ConfigModule.forRoot({
@@ -39,29 +38,16 @@ import { SomeOtherService } from './user/test.service';
             },
         }),
 
-        // BullModule.forRootAsync({
-        //     useFactory: async () => ({
-        //         connection: {
-        //             host: 'localhost',
-        //             port: 6379,
-        //         },
-        //     }),
-        // }),
-
-        EventEmitterModule.forRoot({
-            // wildcard: true,
-            // delimiter: '-',
-            // verboseMemoryLeak: true,
-            // ignoreErrors: false,
-        }),
+        EventEmitterModule.forRoot({}),
         AuthModule,
-        // ChannelModule,
-        // ParticipantModule
+        ChannelModule,
+        ParticipantModule,
         MessageModule,
-        CacheModule.register({
-            isGlobal: true,
-        }),
+
+        // CacheModule.register({
+        //     isGlobal: true,
+        // }),
     ],
-    providers: [EventsService, SomeOtherService],
+    providers: [QueueService],
 })
 export class AppModule {}

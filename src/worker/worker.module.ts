@@ -1,32 +1,35 @@
-import { WorkerService } from './worker.service';
-import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
-import { join } from 'path';
-import { USER_PROCESSOR } from 'src/config/job.interface';
 import { EventEmitterModule } from '@nestjs/event-emitter';
-import { WorkerProcessorHost } from './worker.processor';
-import { EventsService } from 'src/common/eventbus/eventbus.service';
-import { UserEvent } from 'src/user/listeners/user-created.listener';
-import { SomeOtherService } from 'src/user/test.service';
 import { UserBackgroundModule } from './user/backgroud.module';
+import { ChannelBackgroundModule } from './channel/channel.module';
+import { TypeOrmService } from 'src/infrastructure/database/typeorm.service';
+import { ConfigModule } from '@nestjs/config';
+import { DataSource } from 'typeorm';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { HttpModule } from '@nestjs/axios';
+import appConfig from 'src/config/app.config';
+import databaseConfig from 'src/config/database.config';
+import { Channel } from 'diagnostics_channel';
 
 @Module({
     imports: [
-        // BullModule.registerQueue({
-        //     name: USER_PROCESSOR,
-        //     processors: [
-        //         {
-        //             concurrency: 1,
-        //             path: join(__dirname, '../user/user.sandbox.processor.js'),
-        //         },
-        //     ],
-        //     prefix: 'ins-chat',
-        //     connection: {
-        //         host: 'localhost',
-        //         port: 6379,
-        //     },
-        // }),
+        ConfigModule.forRoot({
+            isGlobal: true,
+            envFilePath: '.env',
+            load: [appConfig, databaseConfig],
+        }),
+        TypeOrmModule.forRootAsync({
+            useClass: TypeOrmService,
+            imports: [ConfigModule],
+            // inject: [ConfigService],
+            dataSourceFactory: async (options) => {
+                const dataSource = await new DataSource(options).initialize();
+                console.log({ dataSource });
+                return dataSource;
+            },
+        }),
         UserBackgroundModule,
+        ChannelBackgroundModule,
         EventEmitterModule.forRoot(),
     ],
 

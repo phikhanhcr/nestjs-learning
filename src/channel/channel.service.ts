@@ -6,7 +6,7 @@ import {
     ChannelType,
     IChannelInformationResponse,
     ILastMessage,
-} from './entities/channel.entity';
+} from './entity/channel.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ICreateChannelRequest } from './channel.request';
 import { IAuthUser } from 'src/auth/auth.interface';
@@ -25,6 +25,7 @@ import {
 import { Queue } from 'bullmq';
 import { InjectQueue } from '@nestjs/bullmq';
 import { UserService } from 'src/user/user.service';
+import { QueueService } from 'src/infrastructure/queue.service';
 
 export const MESSAGE_NONCE_TTL = 7200; // 2H
 @Injectable()
@@ -33,7 +34,8 @@ export class ChannelService {
         @InjectRepository(Channel)
         private channelsRepository: Repository<Channel>,
         private userService: UserService,
-        @Inject(forwardRef(() => ParticipantService)) private readonly participantService: ParticipantService, // @InjectQueue(CHANNEL_PROCESSOR) private readonly channelQueue: Queue,
+        @Inject(forwardRef(() => ParticipantService)) private readonly participantService: ParticipantService,
+        private readonly queueService: QueueService,
     ) {}
 
     async create(auth: IAuthUser, req: ICreateChannelRequest): Promise<IChannelInformationResponse> {
@@ -76,11 +78,9 @@ export class ChannelService {
         const keyCheckUserInChannel = `p:${data.sender.id}`;
         const channelKey = `channel:${data.channel_id}`;
         const channelDataInRedis = await RedisAdapter.hget(channelKey, keyCheckUserInChannel);
-
         if (channelDataInRedis === null) {
             const participants = JSON.parse((await RedisAdapter.hget(channelKey, 'participants')) as string);
             if (participants !== null && participants.filter((e) => e.id === data.sender.id).length > 0) {
-                data;
                 await RedisAdapter.hset(channelKey, keyCheckUserInChannel, '1');
             } else {
                 throw new APIError({
@@ -102,7 +102,11 @@ export class ChannelService {
             sent_at: data.sent_at,
         };
 
-        // this.channelQueue.add(JOB_PREPROCESS_CHANNEL_MESSAGE, preprocessChannelMessageDataJob);
+        console.log({ preprocessChannelMessageDataJob });
+
+        await (
+            await this.queueService.getQueue<IJobPreprocessChannelMessage>(JOB_PREPROCESS_CHANNEL_MESSAGE)
+        ).add(JOB_PREPROCESS_CHANNEL_MESSAGE, preprocessChannelMessageDataJob);
 
         return preprocessChannelMessageDataJob as IChannelMessagesResponse;
     }
@@ -132,17 +136,16 @@ export class ChannelService {
                 }
 
                 const channel: any = {
-                    _id: channelId,
-                    type: ChannelType.DIRECT,
-                    direct_key: JSON.parse(directKey.toString()),
-                    last_sequence: channelMessage.sequence,
-                    last_message: channelMessage as unknown as ILastMessage,
+                    key: channelId,
+                    keyChannel: JSON.parse(directKey.toString()),
+                    lastSequence: channelMessage.sequence,
+                    lastMessage: channelMessage as unknown as ILastMessage,
                     participants: Object.values(participants),
+                    channelType: ChannelType.DIRECT,
                 };
 
-                console.log({ channel });
                 // race condition ???
-                // channelId = await this.createNewChannel(channel as Channel);
+                await this.createNewChannel(channel as Channel);
 
                 // const user1 = participants[0];
                 // const user2 = participants[1];
@@ -194,5 +197,34 @@ export class ChannelService {
         } catch (err) {
             Logger.error(`Create channel error: `, err);
         }
+    }
+
+    async createNewChannel(channel: Channel): Promise<void> {
+        // let data;
+        // if (channel.channelType === ChannelType.GROUP) {
+        const data = await this.channelsRepository
+            .createQueryBuilder()
+            .insert()
+            .values(channel)
+            .onConflict(
+                `("key") DO UPDATE 
+                SET 
+                    "last_sequence" = EXCLUDED."last_sequence",
+                    "last_message" = EXCLUDED."last_message"`,
+            )
+            .execute();
+        console.log({ data });
+        // } else {
+        //     data = await this.channelsRepository
+        //         .createQueryBuilder()
+        //         .insert()
+        //         .values(channel)
+        //         .onConflict(`("id") DO NOTHING`)
+        //         .execute();
+        // }
+        // if (data) {
+        //     return data._id.toString();
+        // }
+        // return channel._id;
     }
 }

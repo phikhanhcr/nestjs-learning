@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS public.channels (
     key bytea NOT NULL,
     key_channel jsonb NOT NULL DEFAULT '{}',
     last_message jsonb NULL DEFAULT NULL,
+    last_sequence integer NOT NULL DEFAULT 0,
     participants jsonb NOT NULL DEFAULT '[]',
     channel_type SMALLINT NOT NULL DEFAULT 1,
     created_at timestamp with time zone NOT NULL DEFAULT now(),

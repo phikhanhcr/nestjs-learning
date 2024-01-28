@@ -6,6 +6,7 @@ import {
     UpdateDateColumn,
     DeleteDateColumn,
     ObjectIdColumn,
+    PrimaryColumn,
 } from 'typeorm';
 import { BSON, EJSON, ObjectId } from 'bson';
 export interface IChannelInformationResponse {
@@ -51,6 +52,18 @@ export interface IParticipant {
     avatar: string;
 }
 
+export interface IChannel {
+    id: number;
+    key: ObjectId;
+    key_channel: string;
+    last_message: ILastMessage;
+    last_sequence: number;
+    participants: IParticipant[];
+    channel_type: ChannelType;
+    created_at: Date;
+    updated_at: Date;
+}
+
 @Entity({
     name: 'channels',
 })
@@ -59,6 +72,7 @@ export class Channel {
     id: number;
 
     @ObjectIdColumn()
+    @PrimaryColumn()
     @Column({
         type: 'bytea',
         nullable: false,
@@ -80,6 +94,12 @@ export class Channel {
         name: 'last_message',
     })
     lastMessage: ILastMessage;
+
+    @Column({
+        type: 'integer',
+        name: 'last_sequence',
+    })
+    lastSequence: number;
 
     @Column({
         type: 'jsonb',

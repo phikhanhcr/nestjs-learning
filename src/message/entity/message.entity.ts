@@ -1,6 +1,14 @@
-import { ChannelMessageType } from 'src/channel/entities/channel.entity';
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, DeleteDateColumn } from 'typeorm';
-
+import { ChannelMessageType } from 'src/channel/entity/channel.entity';
+import {
+    Entity,
+    Column,
+    PrimaryGeneratedColumn,
+    CreateDateColumn,
+    UpdateDateColumn,
+    DeleteDateColumn,
+    ObjectIdColumn,
+} from 'typeorm';
+import { ObjectId } from 'bson';
 export interface IMessage {
     id: number;
     channelId: number;
@@ -18,15 +26,17 @@ export interface IMessage {
 @Entity({
     name: 'messages',
 })
-export class Channel {
+export class Message {
     @PrimaryGeneratedColumn()
     id: number;
 
+    @ObjectIdColumn()
     @Column({
+        type: 'bytea',
+        nullable: true,
         name: 'channel_id',
-        nullable: false,
     })
-    channelId: number;
+    channelId: ObjectId;
 
     @Column({
         name: 'sender_id',

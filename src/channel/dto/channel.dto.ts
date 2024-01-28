@@ -1,5 +1,5 @@
-import { IsNotEmpty, Max, Min } from 'class-validator';
-import { ChannelMessageType, ChannelType } from '../entities/channel.entity';
+import { IsNotEmpty, IsNumber, Max, MaxLength, Min, MinLength } from 'class-validator';
+import { ChannelMessageType, ChannelType } from '../entity/channel.entity';
 export class CreateChannelDto {
     @IsNotEmpty()
     type: ChannelType;
@@ -10,15 +10,18 @@ export class CreateChannelDto {
 
 export class SendMessageDto {
     @IsNotEmpty()
+    @IsNumber()
     nonce: number;
 
     @IsNotEmpty()
     channel_id: string;
 
-    // @Max(1000)
-    // @Min(1)
+    @MaxLength(1000)
+    @MinLength(1)
     message: string;
 
     @IsNotEmpty()
     message_type: ChannelMessageType;
+
+    sender: Object;
 }

@@ -1,4 +1,4 @@
-import { Channel } from 'src/channel/entities/channel.entity';
+import { Channel } from 'src/channel/entity/channel.entity';
 import {
     Entity,
     Column,
@@ -29,9 +29,17 @@ export class Participant {
     @Column({
         name: 'channel_id',
         nullable: false,
-        type: 'bytea',
+        type: 'number',
     })
-    channelId: ObjectId;
+    channelId: number;
+
+    @ObjectIdColumn()
+    @Column({
+        type: 'bytea',
+        nullable: true,
+        name: 'channel_id',
+    })
+    channelKey: ObjectId;
 
     @Column({
         name: 'channel_name',

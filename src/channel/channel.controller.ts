@@ -21,7 +21,7 @@ import { UserGuard } from 'src/user/user.guard';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { UserMiddleware } from 'src/user/user.middleware';
 import { AddSenderInformationMiddleware } from './channel.middleware';
-import { AddSenderInformationInterceptor } from './channel.interceptor';
+import { AddSenderInformationInterceptor } from './AddSenderInformationInterceptor';
 import httpStatus from 'http-status';
 import { APIError } from 'src/common/error/api.error';
 import { ObjectId } from 'bson';
@@ -29,47 +29,46 @@ import { ErrorCode } from 'src/config/errors';
 export const MESSAGE_NONCE_TTL = 7200; // 2H
 @Controller('chat/channels')
 export class ChannelController {
-    constructor(
-        private readonly channelService: ChannelService,
-        @Inject(CACHE_MANAGER) private cacheManager: Cache,
-    ) {}
+    constructor(private readonly channelService: ChannelService) {}
 
     @Get()
-    async getAllChannel(@Request() req): Promise<string> {
+    @UseGuards(AuthGuard)
+    @UseInterceptors(AddSenderInformationInterceptor)
+    async getAllChannel(@Request() req) {
         return 'ple';
     }
 
-    @Post('/')
+    @Post()
     @UseGuards(UserGuard, AuthGuard)
+    @UseInterceptors(AddSenderInformationInterceptor)
     async createChannel(@Request() req, @Body() createChannel: CreateChannelDto) {
         console.log({ check: req.user });
-        const result = this.channelService.create(req.user, createChannel);
-
+        const result = await this.channelService.create(req.user, createChannel);
         return {
             data: result,
         };
     }
 
     // send message to channel
-
-    @Post('/message')
-    @UseGuards(UserGuard, AuthGuard)
+    @Post('messages')
+    @UseGuards(AuthGuard)
     @UseInterceptors(AddSenderInformationInterceptor)
-    async sendMessageToChannel(@Request() req, @Response() res, @Body() sendMessage: SendMessageDto) {
+    async sendMessageToChannel(@Request() req, @Body() sendMessage: SendMessageDto) {
         const data = { ...req.body };
         const channelMessageId = new ObjectId();
         const returnValue = await (
             await RedisAdapter.getClient()
         ).set(`nonce:channel:message:${8}:${data.nonce}`, channelMessageId.toString(), 'EX', MESSAGE_NONCE_TTL, 'NX');
+        // if (!returnValue) {
+        //     Logger.error('Duplicate nonce value!');
+        //     throw new APIError({
+        //         message: `chat.channel.send_message.${ErrorCode.REQUEST_NOT_FOUND}`,
+        //         status: httpStatus.CONFLICT,
+        //         errorCode: ErrorCode.REQUEST_NOT_FOUND,
+        //     });
+        // }
 
-        if (!returnValue) {
-            Logger.error('Duplicate nonce value!');
-            throw new APIError({
-                message: `chat.channel.send_message.${ErrorCode.REQUEST_NOT_FOUND}`,
-                status: httpStatus.CONFLICT,
-                errorCode: ErrorCode.REQUEST_NOT_FOUND,
-            });
-        }
+        console.log({ returnValue });
 
         data.id = channelMessageId.toHexString();
 
@@ -83,13 +82,8 @@ export class ChannelController {
             sent_at: data.sent_at,
         };
 
-        const result = this.channelService.sendMessageToChannel(dataSendMessage);
-
-        res.sendJson({
-            error_code: 0,
-            message: req.i18n.t(`chat.channel.send_message.0`),
-            data: result,
-        });
-        return 'ple';
+        console.log({ dataSendMessage });
+        const result = await this.channelService.sendMessageToChannel(dataSendMessage);
+        return result;
     }
 }
