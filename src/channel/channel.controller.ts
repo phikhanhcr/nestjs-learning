@@ -76,7 +76,7 @@ export class ChannelController {
             id: data.id,
             nonce: data.nonce,
             sender: data.sender,
-            channel_id: data.channel_id,
+            channel_key: data.channel_id,
             message_type: data.message_type,
             message: data.message,
             sent_at: data.sent_at,

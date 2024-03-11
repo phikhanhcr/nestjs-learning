@@ -1,4 +1,4 @@
-import { Channel } from 'src/channel/entity/channel.entity';
+import { Channel, IKeyChannel, ILastMessage } from 'src/channel/entity/channel.entity';
 import {
     Entity,
     Column,
@@ -11,6 +11,23 @@ import {
     ObjectIdColumn,
 } from 'typeorm';
 import { ObjectId } from 'bson';
+
+export interface IParticipant {
+    id: number;
+    user_id: number;
+    channel_id: number;
+    channel_key: IKeyChannel;
+    channel_name: string;
+    channel_avatar: string;
+    last_seen: number;
+    last_sequence: number;
+    last_active_at: Date;
+    unread_count: number;
+    other_last_seen: number;
+    last_message: ILastMessage;
+    created_at: Date;
+    updated_at: Date;
+}
 
 @Entity({
     name: 'participants',
@@ -25,11 +42,10 @@ export class Participant {
     })
     userId: number;
 
-    @ObjectIdColumn()
     @Column({
         name: 'channel_id',
         nullable: false,
-        type: 'number',
+        type: 'integer',
     })
     channelId: number;
 
@@ -37,9 +53,9 @@ export class Participant {
     @Column({
         type: 'bytea',
         nullable: true,
-        name: 'channel_id',
+        name: 'channel_key',
     })
-    channelKey: ObjectId;
+    channelKey: IKeyChannel;
 
     @Column({
         name: 'channel_name',
@@ -80,8 +96,27 @@ export class Participant {
     })
     unReadCount: number;
 
-    @ManyToOne(() => Channel)
-    @JoinColumn()
+    @Column({
+        name: 'other_last_seen',
+        nullable: false,
+        default: 0,
+    })
+    otherLastSeen: number;
+
+    @Column({
+        type: 'json',
+        nullable: true,
+        default: null,
+        name: 'last_message',
+    })
+    lastMessage: ILastMessage;
+
+    // @ManyToOne(() => Channel)
+    // @JoinColumn()
+    // channel: Channel;
+
+    @ManyToOne(() => Channel, (channel) => channel.participants)
+    @JoinColumn({ name: 'channel_id', referencedColumnName: 'id' })
     channel: Channel;
 
     @CreateDateColumn({

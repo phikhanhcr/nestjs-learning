@@ -11,7 +11,6 @@ export class MessageService {
     ) {}
 
     async saveMessageToDB(message: Message): Promise<void> {
-        console.log({ message });
         await this.messagesRepository.save({
             ...message,
         });

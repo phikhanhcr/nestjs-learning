@@ -10,7 +10,7 @@ export const JOB_SAVE_MESSAGE_TO_DB = 'save_message_to_db';
 export interface IJobPreprocessChannelMessage {
     id: string;
     nonce: string;
-    channel_id: string;
+    channel_key: string;
     message: string;
     message_type: ChannelMessageType;
     sender: IMember;

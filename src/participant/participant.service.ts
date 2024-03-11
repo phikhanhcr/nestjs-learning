@@ -3,7 +3,7 @@ import { IUserInformation } from './../user/user.interface';
 import { Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
 import { ChannelService } from 'src/channel/channel.service';
 import { Repository } from 'typeorm';
-import { Participant } from './entity/participant.entity';
+import { IParticipant, Participant } from './entity/participant.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ObjectId } from 'bson';
 
@@ -16,8 +16,8 @@ export class ParticipantService {
         private readonly channelService: ChannelService,
     ) {}
 
-    async getParticipantInfo(channelId: string, userId: number): Promise<any> {
-        return await this.participantRepository.findOneBy({ channelId: new ObjectId(channelId), userId });
+    async getParticipantInfo(channelId: string, userId: number): Promise<void> {
+        // return await this.participantRepository.findOneBy({ channelId, userId });
     }
 
     async getChannelId(users: IUserInformation[]): Promise<string> {
@@ -75,5 +75,14 @@ export class ParticipantService {
         }
 
         return channelId.toString();
+    }
+
+    async createParticipants(participants: IParticipant[]): Promise<void> {
+        await this.participantRepository
+            .createQueryBuilder()
+            .insert()
+            .into(Participant)
+            .values([...participants])
+            .execute();
     }
 }

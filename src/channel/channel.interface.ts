@@ -10,7 +10,7 @@ export interface ICreateChannelMessageRequest {
     id: string;
     nonce: string;
     sender: IMember;
-    channel_id: string;
+    channel_key: string;
     message_type: ChannelMessageType;
     message?: string;
     sent_at: number;
@@ -19,7 +19,7 @@ export interface ICreateChannelMessageRequest {
 export interface IChannelMessagesResponse {
     id: string;
     nonce: string;
-    channel_id: string;
+    channel_key: string;
     message: string;
     message_type: ChannelMessageType;
     sender: IMember;

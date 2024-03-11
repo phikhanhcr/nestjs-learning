@@ -50,7 +50,7 @@ export class SaveMessageToDBJob implements OnApplicationBootstrap {
 
         const channelMessageData = job.data as IChannelMessagesResponse;
         const iChannelMessage = {
-            channelId: channelMessageData.channel_id,
+            channelId: channelMessageData.channel_key,
             message: channelMessageData.message,
             messageType: channelMessageData.message_type,
             senderId: channelMessageData.sender.id,
@@ -61,5 +61,8 @@ export class SaveMessageToDBJob implements OnApplicationBootstrap {
         } as any;
 
         await this.messageService.saveMessageToDB(iChannelMessage);
+
+        // PushLastMessageToBucket(iChannelMessage);
+        // save last message to participant
     }
 }

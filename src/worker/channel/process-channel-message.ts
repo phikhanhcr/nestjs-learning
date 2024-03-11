@@ -61,21 +61,31 @@ export class ProcessChannelMessageJob implements OnApplicationBootstrap {
 
         // get channel information
         let channelRedis = JSON.parse(
-            (await RedisAdapter.hget(`channel:${preprocessMessageData.channel_id}`, 'direct_key')) as string,
+            (await RedisAdapter.hget(`channel:${preprocessMessageData.channel_key}`, 'direct_key')) as string,
         );
 
         if (!channelRedis) {
-            channelRedis = await this.channelService.findChannelByKey(preprocessMessageData.channel_id);
+            channelRedis = await this.channelService.findChannelByKey(preprocessMessageData.channel_key);
         }
 
         // clean message => later
 
-        await this.channelService.findOrCreateChannel(channelMessageData.channel_id, channelMessageData);
+        // check participant in channel
+        // create participant
+        // if participant is not existed => create new, last_seen = 0
+        await this.channelService.findOrCreateChannel(channelMessageData.channel_key, channelMessageData);
 
-        const dataRedis = await RedisAdapter.hmget(`channel:${channelMessageData.channel_id}`, [
+        const dataRedis = await RedisAdapter.hmget(`channel:${channelMessageData.channel_key}`, [
             'direct_key',
             'participants',
         ]);
+
+        console.log({ dataRedis });
+
+        // khi gui: last_seen = 0
+
+        // update last seen to participant
+        // another job for updating last seen of participant
 
         await (
             await this.queueService.getQueue<IChannelMessagesResponse>(JOB_SAVE_MESSAGE_TO_DB)

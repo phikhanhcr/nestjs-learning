@@ -26,6 +26,7 @@ import { Queue } from 'bullmq';
 import { InjectQueue } from '@nestjs/bullmq';
 import { UserService } from 'src/user/user.service';
 import { QueueService } from 'src/infrastructure/queue.service';
+import { Participant } from 'src/participant/entity/participant.entity';
 
 export const MESSAGE_NONCE_TTL = 7200; // 2H
 @Injectable()
@@ -76,11 +77,12 @@ export class ChannelService {
         // do something
         // check participant in channel
         const keyCheckUserInChannel = `p:${data.sender.id}`;
-        const channelKey = `channel:${data.channel_id}`;
+        const channelKey = `channel:${data.channel_key}`;
         const channelDataInRedis = await RedisAdapter.hget(channelKey, keyCheckUserInChannel);
-        if (channelDataInRedis === null) {
+        if (!channelDataInRedis) {
             const participants = JSON.parse((await RedisAdapter.hget(channelKey, 'participants')) as string);
-            if (participants !== null && participants.filter((e) => e.id === data.sender.id).length > 0) {
+            console.log({ participants });
+            if (participants && participants.filter((e) => e.id === data.sender.id).length > 0) {
                 await RedisAdapter.hset(channelKey, keyCheckUserInChannel, '1');
             } else {
                 throw new APIError({
@@ -90,15 +92,14 @@ export class ChannelService {
                 });
             }
         }
-
         const preprocessChannelMessageDataJob: IJobPreprocessChannelMessage = {
             id: data.id,
             nonce: data.nonce,
-            channel_id: data.channel_id,
+            channel_key: data.channel_key,
             message: data.message,
             message_type: data.message_type,
             sender: data.sender,
-            sequence: await this.getSequenceForChannel(data.channel_id),
+            sequence: await this.getSequenceForChannel(data.channel_key),
             sent_at: data.sent_at,
         };
 
@@ -115,13 +116,11 @@ export class ChannelService {
         try {
             const data = await RedisAdapter.hmget(`channel:${channelId}`, ['temporary', 'direct_key', 'participants']);
             const temporary = data[`temporary`];
-            if (temporary === '1') {
+            if (temporary === '0') {
                 const directKey = data[`direct_key`];
-
-                const channelMembers = JSON.parse(data[`participants`]);
-
                 const participants = [];
 
+                const channelMembers = JSON.parse(data[`participants`]);
                 if (channelMembers !== null) {
                     await Promise.all(
                         channelMembers.map(async (element) => {
@@ -145,64 +144,59 @@ export class ChannelService {
                 };
 
                 // race condition ???
-                await this.createNewChannel(channel as Channel);
+                const channelData = await this.createNewChannel(channel as Channel);
+                const user1 = participants[0];
+                const user2 = participants[1];
 
-                // const user1 = participants[0];
-                // const user2 = participants[1];
+                const iParticipants = [];
 
-                // const iParticipants = [];
+                const lastActivityAt = new Date();
 
-                // const lastActivityAt = new Date();
+                const channelKey = JSON.parse(directKey.toString());
 
-                // const channelKey = JSON.parse(directKey.toString());
+                const participantUser1 = {
+                    userId: user1.id,
+                    channelId: channelData.id,
+                    channelKey: channelKey,
+                    channelName: user2.name ? user2.name : 'user',
+                    channelAvatar: user2.avatar,
+                    lastSeen: 0,
+                    lastActiveAt: lastActivityAt,
+                    lastSequence: channelMessage.sequence,
+                    unReadCount: channelMessage.sequence,
+                    lastMessage: channelMessage as unknown as ILastMessage,
+                    otherLastSeen: 0,
+                };
+                iParticipants.push(participantUser1);
 
-                // const participantUser1 = {
-                //     user_id: user1.id,
-                //     user_type: user1.type,
-                //     channel_id: channelId,
-                //     channel_key: channelKey,
-                //     channel_type: ChannelType.DIRECT,
-                //     channel_name: user2.name ? user2.name : 'user',
-                //     channel_avatar: user2.avatar,
-                //     last_seen: 0,
-                //     last_activity_at: lastActivityAt,
-                //     last_sequence: channelMessage.sequence,
-                //     unread_count: channelMessage.sequence,
-                //     last_message: channelMessage as unknown as ILastMessage,
-                //     other_last_seen: 0,
-                // } as IParticipant;
-                // iParticipants.push(participantUser1);
+                const participantUser2 = {
+                    userId: user2.id,
+                    channelId: channelData.id,
+                    channelKey: channelKey,
+                    channelName: user1.name ? user1.name : 'user',
+                    channelAvatar: user1.avatar,
+                    lastSeen: 0,
+                    lastActivityAt: lastActivityAt,
+                    lastSequence: channelMessage.sequence,
+                    unreadCount: channelMessage.sequence,
+                    lastMessage: channelMessage as unknown as ILastMessage,
+                    otherLastSeen: 0,
+                };
+                iParticipants.push(participantUser2);
 
-                // const participantUser2 = {
-                //     user_id: user2.id,
-                //     user_type: user2.type,
-                //     channel_id: channelId,
-                //     channel_key: channelKey,
-                //     channel_type: ChannelType.DIRECT,
-                //     channel_name: user1.name ? user1.name : 'user',
-                //     channel_avatar: user1.avatar,
-                //     last_seen: 0,
-                //     last_activity_at: lastActivityAt,
-                //     last_sequence: channelMessage.sequence,
-                //     unread_count: channelMessage.sequence,
-                //     last_message: channelMessage as unknown as ILastMessage,
-                //     other_last_seen: 0,
-                // } as IParticipant;
-                // iParticipants.push(participantUser2);
+                await this.participantService.createParticipants(iParticipants);
 
-                // await ParticipantService.createParticipants(iParticipants);
-
-                // await RedisAdapter.hset(`channel:${channelId}`, 'temporary', '0');
+                await RedisAdapter.hset(`channel:${channelId}`, 'temporary', '0');
             }
         } catch (err) {
             Logger.error(`Create channel error: `, err);
         }
     }
 
-    async createNewChannel(channel: Channel): Promise<void> {
+    async createNewChannel(channel: Channel): Promise<Channel> {
         // let data;
         // if (channel.channelType === ChannelType.GROUP) {
-        const data = await this.channelsRepository
+        const channels = await this.channelsRepository
             .createQueryBuilder()
             .insert()
             .values(channel)
@@ -213,7 +207,7 @@ export class ChannelService {
                     "last_message" = EXCLUDED."last_message"`,
             )
             .execute();
-        console.log({ data });
+        return channels.raw[0];
         // } else {
         //     data = await this.channelsRepository
         //         .createQueryBuilder()

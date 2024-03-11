@@ -79,3 +79,9 @@ run job in another process / user-service => base on queue service,
 // check why should use mongoObjectId instead of number
 // try to refactor using number instead of objectId
 // create channel, message => oke
+
+
+
+// create participant
+// store infor of members in redis
+// update last seen for participant

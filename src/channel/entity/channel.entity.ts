@@ -45,8 +45,7 @@ export interface ILastMessage {
         avatar: string;
     };
 }
-
-export interface IParticipant {
+interface IParticipant {
     id: number;
     name: string;
     avatar: string;
