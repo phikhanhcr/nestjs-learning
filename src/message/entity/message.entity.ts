@@ -9,6 +9,27 @@ import {
     ObjectIdColumn,
 } from 'typeorm';
 import { ObjectId } from 'bson';
+
+// const iChannelMessage = {
+//     channel_id: channelMessageData.channel_id,
+//     message: channelMessageData.message,
+//     message_type: channelMessageData.message_type,
+//     sender_id: channelMessageData.sender.id,
+//     sender_name: channelMessageData.sender.name,
+//     sender_avatar: channelMessageData.sender.avatar,
+//     sequence: channelMessageData.sequence,
+//     sent_at: channelMessageData.sent_at,
+// } as any;
+export interface ISaveMessage {
+    channel_id: number;
+    message: string;
+    message_type: ChannelMessageType;
+    sender_id: number;
+    sender_name: string;
+    sender_avatar: string;
+    sequence: number;
+    sent_at: number;
+}
 export interface IMessage {
     id: number;
     channelId: number;
@@ -30,13 +51,12 @@ export class Message {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @ObjectIdColumn()
     @Column({
-        type: 'bytea',
-        nullable: true,
         name: 'channel_id',
+        nullable: false,
+        type: 'integer',
     })
-    channelId: ObjectId;
+    channelId: number;
 
     @Column({
         name: 'sender_id',

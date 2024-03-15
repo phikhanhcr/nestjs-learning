@@ -28,15 +28,14 @@ export class UserWorkerBackgroundService implements OnApplicationBootstrap {
             UserWorkerBackgroundService.connectionOps,
         );
         worker.on('completed', (job) => {
-            console.log(`Job completed with result ${job.returnvalue}`);
+            Logger.debug(`Job completed with result ${job.returnvalue}`);
         });
         worker.on('failed', (job, err) => {
-            console.log(`Job failed with reason ${err}`);
+            Logger.debug(`Job failed with reason ${err}`);
         });
     }
 
     process(job) {
-        console.log('Send email to ' + job.data.user.name);
         this.eventEmitter.emit('test', '1234');
     }
 }

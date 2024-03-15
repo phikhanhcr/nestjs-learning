@@ -18,7 +18,6 @@ CREATE TABLE IF NOT EXISTS public.participants (
     id SERIAL PRIMARY KEY NOT NULL,
     user_id integer NOT NULL,
     channel_id integer NOT NULL,
-    channel_key jsonb NOT NULL DEFAULT '{}',
     channel_name character varying(50) NOT NULL DEFAULT '',
     channel_avatar character varying(250) NOT NULL DEFAULT '',
     last_seen integer NULL DEFAULT NULL,

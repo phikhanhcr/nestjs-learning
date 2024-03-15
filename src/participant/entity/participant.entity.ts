@@ -16,7 +16,6 @@ export interface IParticipant {
     id: number;
     user_id: number;
     channel_id: number;
-    channel_key: IKeyChannel;
     channel_name: string;
     channel_avatar: string;
     last_seen: number;
@@ -48,14 +47,6 @@ export class Participant {
         type: 'integer',
     })
     channelId: number;
-
-    @ObjectIdColumn()
-    @Column({
-        type: 'bytea',
-        nullable: true,
-        name: 'channel_key',
-    })
-    channelKey: IKeyChannel;
 
     @Column({
         name: 'channel_name',

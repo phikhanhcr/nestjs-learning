@@ -20,6 +20,7 @@ import { IChannelMessagesResponse, ICreateChannelMessageRequest } from './channe
 import {
     CHANNEL_PROCESSOR,
     IJobPreprocessChannelMessage,
+    IJobSaveMessageToDB,
     JOB_PREPROCESS_CHANNEL_MESSAGE,
 } from 'src/config/job.interface';
 import { Queue } from 'bullmq';
@@ -27,6 +28,7 @@ import { InjectQueue } from '@nestjs/bullmq';
 import { UserService } from 'src/user/user.service';
 import { QueueService } from 'src/infrastructure/queue.service';
 import { Participant } from 'src/participant/entity/participant.entity';
+import { ISaveMessage } from 'src/message/entity/message.entity';
 
 export const MESSAGE_NONCE_TTL = 7200; // 2H
 @Injectable()
@@ -61,7 +63,8 @@ export class ChannelService {
 
     // base on key gen by sys
     async findChannelByKey(id: string): Promise<Channel> {
-        return this.channelsRepository.findOneBy({ key: new ObjectId(id) });
+        const byteaValue = Buffer.from(id);
+        return this.channelsRepository.createQueryBuilder().where('key = :id', { id: byteaValue }).getOne();
     }
 
     async getSequenceForChannel(channelId: string): Promise<number> {
@@ -116,7 +119,8 @@ export class ChannelService {
         try {
             const data = await RedisAdapter.hmget(`channel:${channelId}`, ['temporary', 'direct_key', 'participants']);
             const temporary = data[`temporary`];
-            if (temporary === '0') {
+            console.log({ temporary });
+            if (temporary === '1') {
                 const directKey = data[`direct_key`];
                 const participants = [];
 
@@ -157,7 +161,6 @@ export class ChannelService {
                 const participantUser1 = {
                     userId: user1.id,
                     channelId: channelData.id,
-                    channelKey: channelKey,
                     channelName: user2.name ? user2.name : 'user',
                     channelAvatar: user2.avatar,
                     lastSeen: 0,
@@ -172,7 +175,6 @@ export class ChannelService {
                 const participantUser2 = {
                     userId: user2.id,
                     channelId: channelData.id,
-                    channelKey: channelKey,
                     channelName: user1.name ? user1.name : 'user',
                     channelAvatar: user1.avatar,
                     lastSeen: 0,
@@ -194,8 +196,6 @@ export class ChannelService {
     }
 
     async createNewChannel(channel: Channel): Promise<Channel> {
-        // let data;
-        // if (channel.channelType === ChannelType.GROUP) {
         const channels = await this.channelsRepository
             .createQueryBuilder()
             .insert()
@@ -208,17 +208,14 @@ export class ChannelService {
             )
             .execute();
         return channels.raw[0];
-        // } else {
-        //     data = await this.channelsRepository
-        //         .createQueryBuilder()
-        //         .insert()
-        //         .values(channel)
-        //         .onConflict(`("id") DO NOTHING`)
-        //         .execute();
-        // }
-        // if (data) {
-        //     return data._id.toString();
-        // }
-        // return channel._id;
+    }
+
+    async updateLastMessage(channelId: number, channelMessage: ISaveMessage): Promise<void> {
+        await this.channelsRepository
+            .createQueryBuilder()
+            .update()
+            .set({ lastSequence: channelMessage.sequence, lastMessage: channelMessage as unknown as ILastMessage })
+            .where('id = :id AND last_sequence < :sequence', { id: channelId, sequence: channelMessage.sequence })
+            .execute();
     }
 }

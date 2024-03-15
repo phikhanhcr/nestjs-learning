@@ -13,11 +13,13 @@ import { SaveMessageToDBJob } from './save-message-to-db';
 import { Message } from 'src/message/entity/message.entity';
 import { MessageService } from 'src/message/message.service';
 import { Channel } from 'src/channel/entity/channel.entity';
+import { UpdateLastSeenParticipantJob } from './update-last-seen-participant';
 
 @Module({
     providers: [
         ProcessChannelMessageJob,
         SaveMessageToDBJob,
+        UpdateLastSeenParticipantJob,
         QueueService,
         UserService,
         ChannelService,

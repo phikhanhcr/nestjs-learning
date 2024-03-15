@@ -26,3 +26,9 @@ export interface IChannelMessagesResponse {
     sequence: number;
     sent_at: number;
 }
+
+export interface IReadMessage {
+    sequence: number;
+    channel_id: number;
+    user_id: number;
+}

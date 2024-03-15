@@ -6,6 +6,8 @@ import { Repository } from 'typeorm';
 import { IParticipant, Participant } from './entity/participant.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ObjectId } from 'bson';
+import { ISaveMessage } from 'src/message/entity/message.entity';
+import { ILastMessage } from 'src/channel/entity/channel.entity';
 
 @Injectable()
 export class ParticipantService {
@@ -83,6 +85,59 @@ export class ParticipantService {
             .insert()
             .into(Participant)
             .values([...participants])
+            .execute();
+    }
+
+    async bulkUpdatelastSeen(bucket: Map<string, number>): Promise<void> {
+        const otherTmp = new Map(bucket);
+        const otherKeys = Array.from(otherTmp.keys());
+
+        for (let i = 0; i < otherKeys.length; i++) {
+            const data = otherKeys[i].split(':');
+            const lastSeen = Number(otherTmp.get(otherKeys[i]));
+            const executeQuery = [];
+            executeQuery.push(
+                this.participantRepository
+                    .createQueryBuilder()
+                    .update(Participant)
+                    .set({
+                        lastSeen,
+                        lastActiveAt: new Date(),
+                    })
+                    .where('user_id = :userId AND channel_id = :channelId AND last_seen < :lastSeen', {
+                        userId: Number(data[0]),
+                        channelId: Number(data[1]),
+                        lastSeen,
+                    }),
+                this.participantRepository
+                    .createQueryBuilder()
+                    .update(Participant)
+                    .set({
+                        otherLastSeen: lastSeen,
+                    })
+                    .where('user_id <> :userId AND channel_id = :channelId', {
+                        userId: Number(data[0]),
+                        channelId: Number(data[1]),
+                    }),
+            );
+
+            await Promise.all([...executeQuery].map((query) => query.execute()));
+        }
+    }
+
+    async updateLastMessageAndUnReadCount(channelId: number, channelMessage: ISaveMessage): Promise<void> {
+        await this.participantRepository
+            .createQueryBuilder()
+            .update(Participant)
+            .set({
+                lastSequence: channelMessage.sequence,
+                lastMessage: channelMessage as unknown as ILastMessage,
+                unReadCount: () => `${channelMessage.sequence} - "last_seen"`,
+            })
+            .where('channel_id = :channelId AND last_sequence < :lastSequence', {
+                channelId: Number(channelId),
+                lastSequence: channelMessage.sequence,
+            })
             .execute();
     }
 }
