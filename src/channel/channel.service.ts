@@ -8,7 +8,7 @@ import {
     ILastMessage,
 } from './entity/channel.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ICreateChannelRequest } from './channel.request';
+import { ICreateChannelRequest, IListChannelsRequest } from './channel.request';
 import { IAuthUser } from 'src/auth/auth.interface';
 import { ParticipantService } from 'src/participant/participant.service';
 import { ObjectId } from 'bson';
@@ -29,6 +29,9 @@ import { UserService } from 'src/user/user.service';
 import { QueueService } from 'src/infrastructure/queue.service';
 import { Participant } from 'src/participant/entity/participant.entity';
 import { ISaveMessage } from 'src/message/entity/message.entity';
+import { IListResponse, IPaginationMeta } from 'src/common/response.interface';
+import { stringify } from 'querystring';
+import * as moment from 'moment-timezone';
 
 export const MESSAGE_NONCE_TTL = 7200; // 2H
 @Injectable()
@@ -36,10 +39,80 @@ export class ChannelService {
     constructor(
         @InjectRepository(Channel)
         private channelsRepository: Repository<Channel>,
+        @InjectRepository(Participant)
+        private participantRepository: Repository<Participant>,
         private userService: UserService,
         @Inject(forwardRef(() => ParticipantService)) private readonly participantService: ParticipantService,
         private readonly queueService: QueueService,
     ) {}
+
+    async listChannels(auth: IAuthUser, req: IListChannelsRequest): Promise<IListResponse<Participant>> {
+        const meta: IPaginationMeta = {
+            next: '',
+            prev: '',
+        };
+        // Your logic here
+        const conditions = {
+            userId: auth.id,
+        } as any;
+
+        const query = this.participantRepository.createQueryBuilder().where(conditions);
+        query.orderBy({ last_active_at: 'DESC' });
+
+        if (req.after) {
+            query.andWhere('last_active_at > :after', { after: moment(+req.after).toDate() });
+            query.orderBy({ last_active_at: 'ASC' });
+        } else if (req.before) {
+            query.andWhere('last_active_at < :before', { before: moment(+req.before).toDate() });
+        }
+
+        query.limit(req.limit + 1);
+
+        let result = await query.getMany();
+        const sizeOfListChannels = result.length;
+        if (!req.after && !req.before) {
+            // console.log({ test: moment(result[sizeOfListChannels - 1].lastActiveAt).toDate() });
+            // Convert lastActiveAt from Date to Unix timestamp
+            // 2024-03-15T00:29:18.430Z
+            meta.prev = '';
+            meta.next = '';
+            if (sizeOfListChannels === Number(req.limit) + 1) {
+                meta.next = stringify({
+                    before: new Date(result[sizeOfListChannels - 1].lastActiveAt).valueOf(),
+                    limit: Number(req.limit),
+                });
+                result.splice(-1, 1);
+            }
+        } else if (req.before) {
+            meta.next = '';
+            meta.prev = stringify({
+                after: req.before,
+                limit: Number(req.limit),
+            });
+            if (sizeOfListChannels === Number(req.limit) + 1) {
+                meta.next = stringify({
+                    before: new Date(result[sizeOfListChannels - 1].lastActiveAt).valueOf(),
+                    limit: Number(req.limit),
+                });
+                result.splice(-1, 1);
+            }
+        } else if (req.after) {
+            result = result.reverse();
+            meta.prev = '';
+            meta.next = stringify({
+                before: req.after,
+                limit: Number(req.limit),
+            });
+            if (sizeOfListChannels === Number(req.limit) + 1) {
+                result.splice(0, 1);
+                meta.prev = stringify({
+                    after: new Date(result[0].lastActiveAt).valueOf(),
+                    limit: Number(req.limit),
+                });
+            }
+        }
+        return { data: result, meta };
+    }
 
     async create(auth: IAuthUser, req: ICreateChannelRequest): Promise<IChannelInformationResponse> {
         let channelId: string;
@@ -105,8 +178,6 @@ export class ChannelService {
             sequence: await this.getSequenceForChannel(data.channel_key),
             sent_at: data.sent_at,
         };
-
-        console.log({ preprocessChannelMessageDataJob });
 
         await (
             await this.queueService.getQueue<IJobPreprocessChannelMessage>(JOB_PREPROCESS_CHANNEL_MESSAGE)

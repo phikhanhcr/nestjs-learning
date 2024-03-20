@@ -17,9 +17,9 @@ import { QueueService } from 'src/infrastructure/queue.service';
     providers: [ChannelService, ParticipantService, AuthService, UserService, QueueService],
     imports: [
         HttpModule,
-        TypeOrmModule.forFeature([Channel]),
-        TypeOrmModule.forFeature([User]),
-        TypeOrmModule.forFeature([Participant]),
+        TypeOrmModule.forFeature([Channel, User, Participant]),
+        // TypeOrmModule.forFeature([User]),
+        // TypeOrmModule.forFeature([Participant]),
         forwardRef(() => ParticipantModule),
     ],
     exports: [ChannelService],

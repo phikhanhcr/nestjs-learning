@@ -12,6 +12,20 @@ import {
 } from 'typeorm';
 import { ObjectId } from 'bson';
 
+export interface IParticipantResponse {
+    id: number;
+    user_id: number;
+    channel_id: number;
+    channel_name: string;
+    channel_avatar: string;
+    last_seen: number;
+    last_sequence: number;
+    last_active_at: number;
+    unread_count: number;
+    other_last_seen: number;
+    last_message: ILastMessage;
+}
+
 export interface IParticipant {
     id: number;
     user_id: number;
@@ -123,4 +137,20 @@ export class Participant {
         name: 'updated_at',
     })
     updatedAt: Date;
+
+    transform(): IParticipantResponse {
+        return {
+            id: this.id,
+            user_id: this.userId,
+            channel_id: this.channelId,
+            channel_name: this.channelName,
+            channel_avatar: this.channelAvatar,
+            last_seen: this.lastSeen,
+            last_sequence: this.lastSequence,
+            last_active_at: this.lastActiveAt.getTime(),
+            unread_count: this.unReadCount,
+            other_last_seen: this.otherLastSeen,
+            last_message: this.lastMessage,
+        };
+    }
 }

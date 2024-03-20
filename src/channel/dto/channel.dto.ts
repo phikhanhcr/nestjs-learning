@@ -1,5 +1,15 @@
 import { IsNotEmpty, IsNumber, Max, MaxLength, Min, MinLength } from 'class-validator';
 import { ChannelMessageType, ChannelType } from '../entity/channel.entity';
+import { DefaultValuePipe } from '@nestjs/common';
+
+export class GetListChannelDto {
+    limit: number;
+
+    before: number;
+
+    after: number;
+}
+
 export class CreateChannelDto {
     @IsNotEmpty()
     type: ChannelType;

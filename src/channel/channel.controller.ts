@@ -11,9 +11,10 @@ import {
     UsePipes,
     Logger,
     Response,
+    Query,
 } from '@nestjs/common';
 import { ChannelService } from './channel.service';
-import { CreateChannelDto, SendMessageDto } from './dto/channel.dto';
+import { CreateChannelDto, GetListChannelDto, SendMessageDto } from './dto/channel.dto';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { RedisAdapter } from 'src/infrastructure/redis/redis.adapter';
@@ -32,17 +33,20 @@ export class ChannelController {
     constructor(private readonly channelService: ChannelService) {}
 
     @Get()
-    @UseGuards(AuthGuard)
-    @UseInterceptors(AddSenderInformationInterceptor)
-    async getAllChannel(@Request() req) {
-        return 'ple';
+    @UseGuards(UserGuard, AuthGuard)
+    async listChannels(@Request() req, @Query() getListChannelDto: GetListChannelDto) {
+        const user = req.user;
+        const result = await this.channelService.listChannels(user, getListChannelDto);
+        return {
+            data: result.data.map((ele) => ele.transform()),
+            mete: result.meta,
+        };
     }
 
     @Post()
     @UseGuards(UserGuard, AuthGuard)
     @UseInterceptors(AddSenderInformationInterceptor)
     async createChannel(@Request() req, @Body() createChannel: CreateChannelDto) {
-        console.log({ check: req.user });
         const result = await this.channelService.create(req.user, createChannel);
         return {
             data: result,
