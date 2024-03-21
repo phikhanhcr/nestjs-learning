@@ -44,7 +44,6 @@ export class ParticipantService {
         if (channel) return channel.key.toString();
 
         channelId = new ObjectId();
-        console.log({ channelId: channelId.toString() });
 
         Logger.log(`Create new channel ID ${channelId.toString()}`);
 

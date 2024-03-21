@@ -11,8 +11,6 @@ export class UserEvent {
 
     @OnEvent(USER_CREATED_EVENT)
     async handleOrderCreatedEvent(event: IUserCreatedEvent) {
-        console.log(event);
-        console.log(USER_CREATED_EVENT);
         await (await this.queueService.getQueue('sendMail')).add('sendMail', { user: [] });
     }
 

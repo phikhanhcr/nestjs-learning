@@ -10,12 +10,7 @@ import { IUserInformation } from './user.interface';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { AllConfigType } from 'src/config/config.type';
-import { USER_PROCESSOR } from 'src/config/job.interface';
-import { Queue } from 'bullmq';
-import { EventBus } from '@nestjs/cqrs';
-import eventbus from 'src/common/eventbus';
 import { catchError, lastValueFrom, map } from 'rxjs';
-import { AxiosError } from 'axios';
 
 const USER_INFORMATION_TTL = 1800; // 30p
 

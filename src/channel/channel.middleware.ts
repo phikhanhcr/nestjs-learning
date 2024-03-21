@@ -6,7 +6,6 @@ export class AddSenderInformationMiddleware implements NestMiddleware {
     use(req: Request, res: Response, next: NextFunction) {
         const { user } = req;
 
-        console.log({ req: req.body, user });
         req.body.sender = {
             id: user.id,
             name: user.name,

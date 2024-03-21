@@ -19,7 +19,6 @@ export class AddSenderInformationInterceptor implements NestInterceptor {
         return next.handle().pipe(
             map((data) => {
                 console.log(`After... ${Date.now() - now}ms`);
-                console.log({ data });
                 return data;
             }),
         );

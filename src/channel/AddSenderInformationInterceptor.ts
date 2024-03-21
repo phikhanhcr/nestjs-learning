@@ -5,10 +5,8 @@ import { map, tap } from 'rxjs/operators';
 @Injectable()
 export class AddSenderInformationInterceptor implements NestInterceptor {
     async intercept(context: ExecutionContext, next: CallHandler<any>): Promise<Observable<any>> {
-        console.log('Before...');
         const req = context.switchToHttp().getRequest();
         const { user } = req;
-        console.log({ user });
 
         req.body.sender = {
             id: user.id,
@@ -20,7 +18,6 @@ export class AddSenderInformationInterceptor implements NestInterceptor {
         const now = Date.now();
         return next.handle().pipe(
             map((data) => {
-                console.log({ data });
                 return data;
             }),
         );

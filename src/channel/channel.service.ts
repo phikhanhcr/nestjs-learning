@@ -169,7 +169,6 @@ export class ChannelService {
         query.limit(req.limit + 1);
 
         const data = await query.getMany();
-        console.log({ data });
         const sizeOfData = data.length;
 
         if (!req.after && !req.before) {
@@ -232,7 +231,6 @@ export class ChannelService {
         const channelDataInRedis = await RedisAdapter.hget(channelKey, keyCheckUserInChannel);
         if (!channelDataInRedis) {
             const participants = JSON.parse((await RedisAdapter.hget(channelKey, 'participants')) as string);
-            console.log({ participants });
             if (participants && participants.filter((e) => e.id === data.sender.id).length > 0) {
                 await RedisAdapter.hset(channelKey, keyCheckUserInChannel, '1');
             } else {
@@ -265,7 +263,6 @@ export class ChannelService {
         try {
             const data = await RedisAdapter.hmget(`channel:${channelId}`, ['temporary', 'direct_key', 'participants']);
             const temporary = data[`temporary`];
-            console.log({ temporary });
             if (temporary === '1') {
                 const directKey = data[`direct_key`];
                 const participants = [];

@@ -16,8 +16,6 @@ import { UserGuard } from './user.guard';
 import { plainToClass } from 'class-transformer';
 import { ConfigService } from '@nestjs/config';
 import { AllConfigType } from '../config/config.type';
-import { User } from './entities/user.entity';
-import { AuthGuard } from '../auth/auth.guard';
 
 @Controller('users')
 export class UserController {
@@ -42,7 +40,6 @@ export class UserController {
     // if defining in global scope, no need to use this decorator
     // @UsePipes(new ValidationPipe())
     create(@Body() createUserDto: CreateUserDto): string {
-        console.log({ createUserDto });
         const data = plainToClass(CreateUserDto, createUserDto);
         return 'create';
     }

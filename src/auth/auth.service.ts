@@ -9,7 +9,6 @@ export class AuthService {
     constructor(private jwtService: JwtService) {}
     async getAuthInfoFromToken(token: string) {
         const data = await this.verifyToken(token);
-        console.log({ data });
         return {
             id: +data.sub,
             name: data.name,
