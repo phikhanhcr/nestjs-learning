@@ -2,11 +2,15 @@ import { IsNotEmpty, IsNumber, Max, MaxLength, Min, MinLength } from 'class-vali
 import { ChannelMessageType, ChannelType } from '../entity/channel.entity';
 import { DefaultValuePipe } from '@nestjs/common';
 
+export class GetMessageFromChannel {
+    channel_id: number;
+    limit: number;
+    before: number;
+    after: number;
+}
 export class GetListChannelDto {
     limit: number;
-
     before: number;
-
     after: number;
 }
 

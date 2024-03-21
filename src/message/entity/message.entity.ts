@@ -10,16 +10,6 @@ import {
 } from 'typeorm';
 import { ObjectId } from 'bson';
 
-// const iChannelMessage = {
-//     channel_id: channelMessageData.channel_id,
-//     message: channelMessageData.message,
-//     message_type: channelMessageData.message_type,
-//     sender_id: channelMessageData.sender.id,
-//     sender_name: channelMessageData.sender.name,
-//     sender_avatar: channelMessageData.sender.avatar,
-//     sequence: channelMessageData.sequence,
-//     sent_at: channelMessageData.sent_at,
-// } as any;
 export interface ISaveMessage {
     channel_id: number;
     message: string;
@@ -28,8 +18,22 @@ export interface ISaveMessage {
     sender_name: string;
     sender_avatar: string;
     sequence: number;
+
     sent_at: number;
 }
+
+export interface IMessageResponse {
+    id: number;
+    channelId: number;
+    senderId: number;
+    senderName: string;
+    senderAvatar: string;
+    message: string;
+    messageType: ChannelMessageType;
+    sequence: number;
+    createdAt: number;
+}
+
 export interface IMessage {
     id: number;
     channelId: number;
@@ -108,4 +112,18 @@ export class Message {
         name: 'updated_at',
     })
     updatedAt: Date;
+
+    transform(): IMessageResponse {
+        return {
+            id: this.id,
+            channelId: this.channelId,
+            senderId: this.senderId,
+            senderName: this.senderName,
+            senderAvatar: this.senderAvatar,
+            message: this.message,
+            messageType: this.messageType,
+            sequence: this.sequence,
+            createdAt: this.createdAt.getTime(),
+        };
+    }
 }

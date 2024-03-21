@@ -8,7 +8,7 @@ import {
     ILastMessage,
 } from './entity/channel.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ICreateChannelRequest, IListChannelsRequest } from './channel.request';
+import { ICreateChannelRequest, IGetMessageFromChannelRequest, IListChannelsRequest } from './channel.request';
 import { IAuthUser } from 'src/auth/auth.interface';
 import { ParticipantService } from 'src/participant/participant.service';
 import { ObjectId } from 'bson';
@@ -28,7 +28,7 @@ import { InjectQueue } from '@nestjs/bullmq';
 import { UserService } from 'src/user/user.service';
 import { QueueService } from 'src/infrastructure/queue.service';
 import { Participant } from 'src/participant/entity/participant.entity';
-import { ISaveMessage } from 'src/message/entity/message.entity';
+import { ISaveMessage, Message } from 'src/message/entity/message.entity';
 import { IListResponse, IPaginationMeta } from 'src/common/response.interface';
 import { stringify } from 'querystring';
 import * as moment from 'moment-timezone';
@@ -41,6 +41,8 @@ export class ChannelService {
         private channelsRepository: Repository<Channel>,
         @InjectRepository(Participant)
         private participantRepository: Repository<Participant>,
+        @InjectRepository(Message)
+        private messageRepository: Repository<Message>,
         private userService: UserService,
         @Inject(forwardRef(() => ParticipantService)) private readonly participantService: ParticipantService,
         private readonly queueService: QueueService,
@@ -71,9 +73,6 @@ export class ChannelService {
         let result = await query.getMany();
         const sizeOfListChannels = result.length;
         if (!req.after && !req.before) {
-            // console.log({ test: moment(result[sizeOfListChannels - 1].lastActiveAt).toDate() });
-            // Convert lastActiveAt from Date to Unix timestamp
-            // 2024-03-15T00:29:18.430Z
             meta.prev = '';
             meta.next = '';
             if (sizeOfListChannels === Number(req.limit) + 1) {
@@ -147,6 +146,82 @@ export class ChannelService {
         } catch (err) {
             throw err;
         }
+    }
+
+    async getMessageFromChannel(auth: IAuthUser, req: IGetMessageFromChannelRequest): Promise<IListResponse<Message>> {
+        const meta: IPaginationMeta = {
+            next: '',
+            prev: '',
+        };
+
+        const query = this.messageRepository.createQueryBuilder().where({
+            channelId: +req.channel_id,
+        });
+        query.orderBy({ sequence: 'DESC' });
+
+        if (req.before) {
+            query.andWhere('sequence <= :before', { before: req.before });
+        } else if (req.after) {
+            query.andWhere('sequence > :after', { after: req.after });
+            query.orderBy({ sequence: 'ASC' });
+        }
+
+        query.limit(req.limit + 1);
+
+        const data = await query.getMany();
+        console.log({ data });
+        const sizeOfData = data.length;
+
+        if (!req.after && !req.before) {
+            meta.prev = '';
+            meta.next = '';
+
+            if (sizeOfData === Number(req.limit) + 1) {
+                meta.next = stringify({
+                    before: data[sizeOfData - 1].sequence,
+                    limit: Number(req.limit),
+                    channel_id: req.channel_id,
+                });
+            }
+
+            data.splice(-1, 1);
+        } else if (req.before) {
+            meta.next = '';
+            meta.prev = stringify({
+                after: req.before,
+                limit: Number(req.limit),
+                channel_id: req.channel_id,
+            });
+
+            if (sizeOfData === Number(req.limit) + 1) {
+                meta.next = stringify({
+                    before: data[sizeOfData - 1].sequence,
+                    limit: Number(req.limit),
+                    channel_id: req.channel_id,
+                });
+                data.splice(-1, 1);
+            }
+        } else if (req.after) {
+            meta.prev = '';
+            meta.next = stringify({
+                before: req.after,
+                limit: Number(req.limit),
+                channel_id: req.channel_id,
+            });
+            if (sizeOfData === Number(req.limit) + 1) {
+                data.splice(0, 1);
+                meta.prev = stringify({
+                    after: data[0].sequence,
+                    limit: Number(req.limit),
+                    channel_id: req.channel_id,
+                });
+            }
+        }
+
+        return {
+            data,
+            meta,
+        };
     }
 
     async sendMessageToChannel(data: ICreateChannelMessageRequest): Promise<IChannelMessagesResponse> {

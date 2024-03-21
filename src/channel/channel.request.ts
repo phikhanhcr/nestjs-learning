@@ -1,4 +1,3 @@
-import e from 'express';
 import { ChannelType } from './entity/channel.entity';
 
 export interface IListChannelsRequest {
@@ -9,4 +8,11 @@ export interface IListChannelsRequest {
 export interface ICreateChannelRequest {
     type: ChannelType;
     members: number[];
+}
+
+export interface IGetMessageFromChannelRequest {
+    channel_id: number;
+    limit: number;
+    before: number;
+    after: number;
 }

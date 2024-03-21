@@ -11,13 +11,14 @@ import { UserService } from 'src/user/user.service';
 import { User } from 'src/user/entities/user.entity';
 import { HttpModule } from '@nestjs/axios';
 import { QueueService } from 'src/infrastructure/queue.service';
+import { Message } from 'src/message/entity/message.entity';
 
 @Module({
     controllers: [ChannelController],
     providers: [ChannelService, ParticipantService, AuthService, UserService, QueueService],
     imports: [
         HttpModule,
-        TypeOrmModule.forFeature([Channel, User, Participant]),
+        TypeOrmModule.forFeature([Channel, User, Participant, Message]),
         // TypeOrmModule.forFeature([User]),
         // TypeOrmModule.forFeature([Participant]),
         forwardRef(() => ParticipantModule),

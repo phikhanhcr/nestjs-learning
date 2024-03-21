@@ -1,27 +1,9 @@
-import {
-    Body,
-    Controller,
-    Get,
-    Inject,
-    Post,
-    Request,
-    UseGuards,
-    NestMiddleware,
-    UseInterceptors,
-    UsePipes,
-    Logger,
-    Response,
-    Query,
-} from '@nestjs/common';
+import { Body, Controller, Get, Post, Request, UseGuards, UseInterceptors, Logger, Query } from '@nestjs/common';
 import { ChannelService } from './channel.service';
-import { CreateChannelDto, GetListChannelDto, SendMessageDto } from './dto/channel.dto';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Cache } from 'cache-manager';
+import { CreateChannelDto, GetListChannelDto, GetMessageFromChannel, SendMessageDto } from './dto/channel.dto';
 import { RedisAdapter } from 'src/infrastructure/redis/redis.adapter';
 import { UserGuard } from 'src/user/user.guard';
 import { AuthGuard } from 'src/auth/auth.guard';
-import { UserMiddleware } from 'src/user/user.middleware';
-import { AddSenderInformationMiddleware } from './channel.middleware';
 import { AddSenderInformationInterceptor } from './AddSenderInformationInterceptor';
 import httpStatus from 'http-status';
 import { APIError } from 'src/common/error/api.error';
@@ -62,17 +44,21 @@ export class ChannelController {
         const channelMessageId = new ObjectId();
         const returnValue = await (
             await RedisAdapter.getClient()
-        ).set(`nonce:channel:message:${8}:${data.nonce}`, channelMessageId.toString(), 'EX', MESSAGE_NONCE_TTL, 'NX');
-        // if (!returnValue) {
-        //     Logger.error('Duplicate nonce value!');
-        //     throw new APIError({
-        //         message: `chat.channel.send_message.${ErrorCode.REQUEST_NOT_FOUND}`,
-        //         status: httpStatus.CONFLICT,
-        //         errorCode: ErrorCode.REQUEST_NOT_FOUND,
-        //     });
-        // }
-
-        console.log({ returnValue });
+        ).set(
+            `nonce:channel:message:${channelMessageId}:${data.nonce}`,
+            channelMessageId.toString(),
+            'EX',
+            MESSAGE_NONCE_TTL,
+            'NX',
+        );
+        if (!returnValue) {
+            Logger.error('Duplicate nonce value!');
+            throw new APIError({
+                message: `chat.channel.send_message.${ErrorCode.REQUEST_NOT_FOUND}`,
+                status: httpStatus.CONFLICT,
+                errorCode: ErrorCode.REQUEST_NOT_FOUND,
+            });
+        }
 
         data.id = channelMessageId.toHexString();
 
@@ -86,8 +72,18 @@ export class ChannelController {
             sent_at: data.sent_at,
         };
 
-        console.log({ dataSendMessage });
         const result = await this.channelService.sendMessageToChannel(dataSendMessage);
         return result;
+    }
+
+    @Get('/messages')
+    @UseGuards(AuthGuard)
+    async getMessageFromChannel(@Request() req, @Query() getMessageFromChannel: GetMessageFromChannel) {
+        const user = req.user;
+        const result = await this.channelService.getMessageFromChannel(user, getMessageFromChannel);
+        return {
+            data: result.data.map((ele) => ele.transform()),
+            mete: result.meta,
+        };
     }
 }
