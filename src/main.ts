@@ -9,6 +9,7 @@ import eventbus from './common/eventbus';
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
+    app.enableCors();
     await RedisAdapter.connect();
     const configService = app.get(ConfigService<AllConfigType>);
     app.useGlobalPipes(
